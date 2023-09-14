@@ -1,6 +1,14 @@
 import { useContext } from 'react';
 import styled from 'styled-components';
-import { MetamaskActions, MetaMaskContext } from '../hooks';
+import {
+  Card,
+  ConnectButton,
+  InstallFlaskButton,
+  ReconnectButton,
+  SendHelloButton,
+} from '../components';
+import { defaultSnapOrigin } from '../config';
+import { MetaMaskContext, MetamaskActions } from '../hooks';
 import {
   connectSnap,
   getSnap,
@@ -8,14 +16,6 @@ import {
   sendHello,
   shouldDisplayReconnectButton,
 } from '../utils';
-import {
-  ConnectButton,
-  InstallFlaskButton,
-  ReconnectButton,
-  SendHelloButton,
-  Card,
-} from '../components';
-import { defaultSnapOrigin } from '../config';
 
 const Container = styled.div`
   display: flex;
@@ -135,10 +135,13 @@ const Index = () => {
   return (
     <Container>
       <Heading>
-        Welcome to <Span>template-snap</Span>
+        Welcome to <Span>Hedera Pulse Snap Demo</Span>
       </Heading>
       <Subtitle>
-        Get started by editing <code>src/index.ts</code>
+        Learn about{' '}
+        <a href="https://docs.metamask.io/snaps/" target="_blank">
+          <code>Metamask Snaps</code>
+        </a>
       </Subtitle>
       <CardContainer>
         {state.error && (
@@ -210,10 +213,9 @@ const Index = () => {
         />
         <Notice>
           <p>
-            Please note that the <b>snap.manifest.json</b> and{' '}
-            <b>package.json</b> must be located in the server root directory and
-            the bundle must be hosted at the location specified by the location
-            field.
+            Please note that this demo site only serves as an example of how an
+            app would interact with <b>Hedera Pulse Snap</b> and you should do
+            your own diligence before integrating it into production grade apps.
           </p>
         </Notice>
       </CardContainer>
