@@ -4,15 +4,15 @@
   "proposedName": "Hedera Pulse",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/template-snap-monorepo.git"
+    "url": "https://github.com/tuum-tech/hedera-pulse.git"
   },
   "source": {
-    "shasum": "ChCC4WZBBeh+DY9SEyauvatjt7JUSlSpjzeJ6wKEu8g=",
+    "shasum": "MwMZCRpQpjXr0N1L6WCEwVDHSKtGuROGCrKUlJ0DJT4=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
         "iconPath": "images/icon.svg",
-        "packageName": "snap",
+        "packageName": "@tuum-tech/hedera-pulse",
         "registry": "https://registry.npmjs.org/"
       }
     }

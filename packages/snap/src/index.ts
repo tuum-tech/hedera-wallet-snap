@@ -1,5 +1,6 @@
 import { OnRpcRequestHandler } from '@metamask/snaps-types';
 import { panel, text } from '@metamask/snaps-ui';
+import { getAccountInfo } from './rpc/account/getAccountInfo';
 
 /**
  * Handle incoming JSON-RPC requests, sent through `wallet_invokeSnap`.
@@ -11,7 +12,18 @@ import { panel, text } from '@metamask/snaps-ui';
  * @returns The result of `snap_dialog`.
  * @throws If the request method is not valid for this snap.
  */
-export const onRpcRequest: OnRpcRequestHandler = ({ origin, request }) => {
+export const onRpcRequest: OnRpcRequestHandler = async ({
+  origin,
+  request,
+}) => {
+  console.log('Request:', JSON.stringify(request, null, 4));
+  console.log('Origin:', origin);
+  console.log('-------------------------------------------------------------');
+  console.log(
+    'request.params=========',
+    JSON.stringify(request.params, null, 4),
+  );
+
   switch (request.method) {
     case 'hello':
       return snap.request({
@@ -27,6 +39,9 @@ export const onRpcRequest: OnRpcRequestHandler = ({ origin, request }) => {
           ]),
         },
       });
+    case 'getAccountInfo': {
+      return await getAccountInfo();
+    }
     default:
       throw new Error('Method not found.');
   }

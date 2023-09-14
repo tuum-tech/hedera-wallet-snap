@@ -1,13 +1,24 @@
 {
-  "name": "snap",
+  "name": "@tuum-tech/hedera-pulse",
   "version": "0.1.0",
   "private": true,
-  "description": "The 'Hello, world!' of MetaMask Snaps, now written in TypeScript.",
+  "description": "Native Hedera Wallet Snap that any other apps can interact with, thereby turning Metamask into a native Hedera wallet without relying on Hedera JSON-RPC Relay.",
+  "keywords": [
+    "MetaMask",
+    "Snaps",
+    "Hedera Hashgraph",
+    "HBAR"
+  ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/template-snap-monorepo.git"
+    "url": "https://github.com/tuum-tech/hedera-pulse.git"
   },
   "license": "(MIT-0 OR Apache-2.0)",
+  "author": {
+    "name": "Tuum Tech",
+    "email": "contact@tuum.tech",
+    "url": "https://tuum.tech"
+  },
   "main": "src/index.ts",
   "files": [
     "dist/",
@@ -27,8 +38,10 @@
     "test": "jest"
   },
   "dependencies": {
+    "@hashgraph/sdk": "^2.33.0",
     "@metamask/snaps-types": "^0.32.2",
     "@metamask/snaps-ui": "^0.32.2",
+    "bignumber.js": "^9.1.2",
     "buffer": "^6.0.3"
   },
   "devDependencies": {
@@ -60,7 +73,7 @@
   },
   "packageManager": "yarn@3.2.1",
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.13.0"
   },
   "publishConfig": {
     "access": "public",
