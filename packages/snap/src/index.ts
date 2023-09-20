@@ -1,6 +1,12 @@
 import { OnRpcRequestHandler } from '@metamask/snaps-types';
 import { panel, text } from '@metamask/snaps-ui';
+
 import { getAccountInfo } from './rpc/account/getAccountInfo';
+import { SimpleHederaClient } from './services/hedera';
+import { getCurrentAccount } from './snap/account';
+import { getSnapStateUnchecked } from './snap/state';
+import { PulseSnapParams } from './types/state';
+import { init } from './utils/init';
 
 /**
  * Handle incoming JSON-RPC requests, sent through `wallet_invokeSnap`.
@@ -24,6 +30,28 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
     JSON.stringify(request.params, null, 4),
   );
 
+  let state = await getSnapStateUnchecked(snap);
+  if (state === null) {
+    state = await init(origin, snap);
+  }
+  console.log('state:', JSON.stringify(state, null, 4));
+
+  const hederaClient: SimpleHederaClient = await getCurrentAccount(
+    origin,
+    state,
+    request.params,
+  );
+  console.log(
+    `Current account: ${JSON.stringify(state.currentAccount, null, 4)}`,
+  );
+
+  const pulseSnapParams: PulseSnapParams = {
+    origin,
+    snap,
+    state,
+    hederaClient,
+  };
+
   switch (request.method) {
     case 'hello':
       return snap.request({
@@ -40,7 +68,7 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
         },
       });
     case 'getAccountInfo': {
-      return await getAccountInfo();
+      return await getAccountInfo(pulseSnapParams);
     }
     default:
       throw new Error('Method not found.');

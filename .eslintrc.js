@@ -18,6 +18,9 @@ module.exports = {
       extends: ['@metamask/eslint-config-typescript'],
       rules: {
         '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
+        '@typescript-eslint/promise-function-async': 'off',
+        '@typescript-eslint/naming-convention': 'off',
+        'import/order': 'off',
       },
     },
 
@@ -37,6 +40,7 @@ module.exports = {
     '!.prettierrc.js',
     '**/!.eslintrc.js',
     '**/dist*/',
+    '**/backend',
     '**/*__GENERATED__*',
     '**/build',
     '**/public',

@@ -1,8 +1,11 @@
 import { useContext } from 'react';
 import styled, { useTheme } from 'styled-components';
-import { MetamaskActions, MetaMaskContext } from '../hooks';
-import { connectSnap, getSnap, getThemePreference } from '../utils';
-import { HeaderButtons } from './Buttons';
+import {
+  MetamaskActions,
+  MetaMaskContext,
+} from '../../contexts/MetamaskContext';
+import { connectSnap, getSnap, getThemePreference } from '../../utils';
+import { HeaderButtons, LinkButton } from './Buttons';
 import { SnapLogo } from './SnapLogo';
 import { Toggle } from './Toggle';
 
@@ -44,6 +47,8 @@ export const Header = ({
 }) => {
   const theme = useTheme();
   const [state, dispatch] = useContext(MetaMaskContext);
+  // eslint-disable-next-line no-negated-condition
+  const url = typeof window !== 'undefined' ? window.location.href : '';
 
   const handleConnectClick = async () => {
     try {
@@ -63,12 +68,16 @@ export const Header = ({
     <HeaderWrapper>
       <LogoWrapper>
         <SnapLogo color={theme.colors.icon.default} size={36} />
-        <Title>hedera-pulse-snap</Title>
+        <Title>identify-snap</Title>
       </LogoWrapper>
       <RightContainer>
         <Toggle
           onToggle={handleToggleClick}
           defaultChecked={getThemePreference()}
+        />
+        <LinkButton
+          link={url.includes('/login') ? '/' : '/login'}
+          title={url.includes('/login') ? 'Main Page' : 'DID Auth Login'}
         />
         <HeaderButtons state={state} onConnectClick={handleConnectClick} />
       </RightContainer>

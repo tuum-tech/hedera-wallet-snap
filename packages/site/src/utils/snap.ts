@@ -2,6 +2,19 @@ import { MetaMaskInpageProvider } from '@metamask/providers';
 import { defaultSnapOrigin } from '../config';
 import { GetSnapsResponse, Snap } from '../types';
 
+export const getCurrentMetamaskAccount = async (): Promise<string> => {
+  const accounts = (await window.ethereum.request({
+    method: 'eth_requestAccounts',
+  })) as string[];
+  return accounts[0];
+};
+
+export const getCurrentNetwork = async (): Promise<string> => {
+  return (await window.ethereum.request({
+    method: 'eth_chainId',
+  })) as string;
+};
+
 /**
  * Get the installed snaps in MetaMask.
  *
@@ -23,13 +36,25 @@ export const getSnaps = async (
 export const connectSnap = async (
   snapId: string = defaultSnapOrigin,
   params: Record<'version' | string, unknown> = {},
-) => {
-  await window.ethereum.request({
-    method: 'wallet_requestSnaps',
-    params: {
-      [snapId]: params,
-    },
-  });
+): Promise<string> => {
+  try {
+    const hederaPulseSnap = await window.ethereum.request({
+      method: 'wallet_requestSnaps',
+      params: {
+        [snapId]: params,
+      },
+    });
+    console.log(
+      'Hedera Pulse Snap Details: ',
+      JSON.stringify(hederaPulseSnap, null, 4),
+    );
+    const account = await getCurrentMetamaskAccount();
+    console.log('Metamask account: ', account);
+    return account;
+  } catch (error) {
+    console.log('Could not connect to Identify Snap: ', error);
+    return '';
+  }
 };
 
 /**
@@ -53,13 +78,19 @@ export const getSnap = async (version?: string): Promise<Snap | undefined> => {
 };
 
 /**
- * Invoke the "hello" method from the example snap.
+ * Invoke the "hello" method from the snap.
  */
 
 export const sendHello = async () => {
-  await window.ethereum.request({
+  return await window.ethereum.request({
     method: 'wallet_invokeSnap',
-    params: { snapId: defaultSnapOrigin, request: { method: 'hello' } },
+    params: {
+      snapId: defaultSnapOrigin,
+      request: {
+        method: 'hello',
+        params: {},
+      },
+    },
   });
 };
 

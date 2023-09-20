@@ -1,8 +1,10 @@
+import 'bootstrap/dist/css/bootstrap.min.css';
 import { FunctionComponent, ReactNode, useContext } from 'react';
 import styled from 'styled-components';
-import { Footer, Header } from './components';
+import { Footer, Header } from './components/base';
 
 import { GlobalStyle } from './config/theme';
+import { ModalContextProvider } from './contexts/ModalContext';
 import { ToggleThemeContext } from './Root';
 
 const Wrapper = styled.div`
@@ -25,7 +27,7 @@ export const App: FunctionComponent<AppProps> = ({ children }) => {
       <GlobalStyle />
       <Wrapper>
         <Header handleToggleClick={toggleTheme} />
-        {children}
+        <ModalContextProvider>{children}</ModalContextProvider>
         <Footer />
       </Wrapper>
     </>

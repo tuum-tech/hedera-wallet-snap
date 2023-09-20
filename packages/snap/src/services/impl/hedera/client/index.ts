@@ -1,15 +1,25 @@
-import type { AccountId, Client, PrivateKey, PublicKey } from '@hashgraph/sdk';
+import {
+  AccountInfo,
+  AccountInfoQuery,
+  type AccountId,
+  type Client,
+  type PrivateKey,
+  type PublicKey,
+} from '@hashgraph/sdk';
 
-import { CryptoTransfer } from '../../../../domain/CryptoTransfer';
-import { AccountBalance, SimpleHederaClient } from '../../../hedera';
-
+import {
+  AccountBalance,
+  HederaAccountInfo,
+  SimpleHederaClient,
+} from '../../../hedera';
 import { getAccountBalance } from './get-account-balance';
-import { getAccountRecords } from './get-account-records';
 
 export class SimpleHederaClientImpl implements SimpleHederaClient {
-  private _client: Client;
+  // eslint-disable-next-line no-restricted-syntax
+  private readonly _client: Client;
 
-  private _privateKey: PrivateKey | null;
+  // eslint-disable-next-line no-restricted-syntax
+  private readonly _privateKey: PrivateKey | null;
 
   constructor(client: Client, privateKey: PrivateKey | null) {
     this._client = client;
@@ -30,19 +40,20 @@ export class SimpleHederaClientImpl implements SimpleHederaClient {
     return this._client.operatorAccountId!;
   }
 
-  async getAccountBalance(): Promise<AccountBalance> {
-    // Workaround for extraneous signing in SDK,
-    // use an operator - less client for balance queries
-    const { Client } = await import('@hashgraph/sdk');
-    const client = Client.forNetwork(this._client.network);
+  async getAccountInfo(accountId: string): Promise<HederaAccountInfo> {
+    // Create the account info query
+    const query = new AccountInfoQuery().setAccountId(accountId);
 
-    // NOTE: important, ensure that we pre-compute the health state of all nodes
-    await client.pingAll();
+    // Sign with client operator private key and submit the query to a Hedera network
+    const accountInfo: AccountInfo = await query.execute(this._client);
 
-    return getAccountBalance(client);
+    return accountInfo as unknown as HederaAccountInfo;
   }
 
-  getAccountRecords(): Promise<CryptoTransfer[] | undefined> {
-    return getAccountRecords();
+  async getAccountBalance(): Promise<AccountBalance> {
+    // NOTE: important, ensure that we pre-compute the health state of all nodes
+    await this._client.pingAll();
+
+    return getAccountBalance(this._client);
   }
 }

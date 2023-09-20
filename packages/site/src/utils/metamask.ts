@@ -40,10 +40,11 @@ export const detectSnaps = async () => {
   }
 
   try {
-    await getSnaps();
+    console.log('Installed snaps: ', JSON.stringify(await getSnaps(), null, 4));
 
     return true;
-  } catch {
+  } catch (e) {
+    console.log('Error while retrieving installed snaps: ', e);
     return false;
   }
 };

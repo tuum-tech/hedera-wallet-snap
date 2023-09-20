@@ -1,4 +1,19 @@
 module.exports = {
+  root: true,
   extends: ['../../.eslintrc.js'],
-  ignorePatterns: ['!.eslintrc.js', 'dist/'],
+  overrides: [
+    {
+      files: ['tests/**/*.ts'],
+      plugins: ['jest'],
+      extends: ['plugin:jest/recommended'],
+      rules: { 'jest/prefer-expect-assertions': 'off' },
+      env: { jest: true },
+    },
+  ],
+  parserOptions: {
+    tsconfigRootDir: __dirname,
+    project: './tsconfig.eslint.json',
+    sourceType: 'module',
+  },
+  ignorePatterns: ['!.eslintrc.js', 'dist/', './postBuild.js'],
 };

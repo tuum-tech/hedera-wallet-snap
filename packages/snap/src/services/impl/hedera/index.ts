@@ -2,50 +2,39 @@ import {
   AccountId,
   Client,
   Hbar,
+  PrivateKey,
   Status,
   StatusError,
   TransferTransaction,
 } from '@hashgraph/sdk';
 import BigNumber from 'bignumber.js';
+import _ from 'lodash';
 
 import { Wallet } from '../../../domain/wallet/abstract';
+import { PrivateKeySoftwareWallet } from '../../../domain/wallet/software-private-key';
+import { fetchDataFromUrl } from '../../../utils/fetch';
 import {
   HederaService,
   MirrorAccountInfo,
   NetworkNodeStakingInfo,
   SimpleHederaClient,
 } from '../../hedera';
-
-import { fetchDataFromUrl } from '../../../utils/fetch';
 import { SimpleHederaClientImpl } from './client';
 
 export class HederaServiceImpl implements HederaService {
+  // eslint-disable-next-line no-restricted-syntax
+  private readonly network: string;
+
+  constructor(network: string) {
+    this.network = network;
+  }
+
   async createClient(options: {
     wallet: Wallet;
-    network:
-      | string
-      | {
-          [key: string]: string | AccountId;
-        };
     keyIndex: number;
     accountId: AccountId;
   }): Promise<SimpleHederaClient | null> {
-    let client;
-
-    if (typeof options.network === 'string') {
-      if (options.network === 'mainnet') {
-        // HACK: node 0.0.3 is offline
-        client = Client.forNetwork({
-          'https://node01-00-grpc.swirlds.com:443': new AccountId(4),
-        });
-      } else {
-        // HACK: the NetworkName type is not exported
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        client = Client.forName(options.network as any);
-      }
-    } else {
-      client = Client.forNetwork(options.network);
-    }
+    const client = Client.forNetwork(this.network as any);
 
     // NOTE: important, ensure that we pre-compute the health state of all nodes
     await client.pingAll();
@@ -113,7 +102,9 @@ export class HederaServiceImpl implements HederaService {
 
     if (response.data.links.next) {
       const secondResponse = await fetchDataFromUrl(
-        `https://${urlBase}.mirrornode.hedera.com${response.data.links.next}`,
+        `https://${urlBase}.mirrornode.hedera.com${
+          response.data.links.next as string
+        }`,
       );
       for (const node of secondResponse.data.nodes) {
         result.push({
@@ -172,11 +163,11 @@ async function testClientOperatorMatch(client: Client) {
 
   try {
     await tx.execute(client);
-  } catch (err) {
-    if (err instanceof StatusError) {
+  } catch (error: any) {
+    if (error instanceof StatusError) {
       if (
-        err.status === Status.InsufficientTxFee ||
-        err.status === Status.InsufficientPayerBalance
+        error.status === Status.InsufficientTxFee ||
+        error.status === Status.InsufficientPayerBalance
       ) {
         // If the transaction fails with Insufficient Tx Fee, this means
         // that the account ID verification succeeded before this point
@@ -188,11 +179,42 @@ async function testClientOperatorMatch(client: Client) {
       return false;
     }
 
-    throw err;
+    throw error;
   }
 
   // under *no* cirumstances should this transaction succeed
   throw new Error(
     'unexpected success of intentionally-erroneous transaction to confirm account ID',
   );
+}
+
+/**
+ * To HederaAccountInfo.
+ *
+ * @param _privateKey - Private Key.
+ * @param _accountId - Account Id.
+ * @param _network - Network.
+ */
+export async function isValidHederaAccountInfo(
+  _privateKey: string,
+  _accountId: string,
+  _network: string,
+): Promise<SimpleHederaClient | null> {
+  const accountId = AccountId.fromString(_accountId);
+  const privateKey = PrivateKey.fromStringECDSA(_privateKey);
+  const wallet: Wallet = new PrivateKeySoftwareWallet(privateKey);
+  const hederaService = new HederaServiceImpl(_network);
+
+  const client = await hederaService.createClient({
+    wallet,
+    keyIndex: 0,
+    accountId,
+  });
+
+  if (client === null || _.isEmpty(client)) {
+    console.error('Invalid private key or account Id of the operator');
+    return null;
+  }
+
+  return client;
 }

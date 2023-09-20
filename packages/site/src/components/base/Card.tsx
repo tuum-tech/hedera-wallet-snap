@@ -3,15 +3,19 @@ import styled from 'styled-components';
 
 type CardProps = {
   content: {
-    title?: string;
-    description: ReactNode;
-    button?: ReactNode;
+    title: string;
+    description: string;
+    form?: ReactNode;
+    button: ReactNode;
   };
   disabled?: boolean;
   fullWidth?: boolean;
 };
 
-const CardWrapper = styled.div<{ fullWidth?: boolean; disabled: boolean }>`
+const CardWrapper = styled.div<{
+  fullWidth?: boolean;
+  disabled: boolean;
+}>`
   display: flex;
   flex-direction: column;
   width: ${({ fullWidth }) => (fullWidth ? '100%' : '250px')};
@@ -40,19 +44,18 @@ const Title = styled.h2`
   }
 `;
 
-const Description = styled.div`
+const Description = styled.p`
   margin-top: 2.4rem;
   margin-bottom: 2.4rem;
 `;
 
 export const Card = ({ content, disabled = false, fullWidth }: CardProps) => {
-  const { title, description, button } = content;
+  const { title, description, button, form } = content;
   return (
     <CardWrapper fullWidth={fullWidth} disabled={disabled}>
-      {title && (
-        <Title>{title}</Title>
-      )}
+      <Title>{title}</Title>
       <Description>{description}</Description>
+      {form}
       {button}
     </CardWrapper>
   );

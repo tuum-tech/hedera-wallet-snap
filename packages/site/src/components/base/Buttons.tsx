@@ -1,8 +1,10 @@
 import { ComponentProps } from 'react';
+import BSButton from 'react-bootstrap/Button';
+import Spinner from 'react-bootstrap/Spinner';
 import styled from 'styled-components';
-import { MetamaskState } from '../hooks';
-import { ReactComponent as FlaskFox } from '../assets/flask_fox.svg';
-import { shouldDisplayReconnectButton } from '../utils';
+import { ReactComponent as FlaskFox } from '../../assets/flask_fox.svg';
+import { MetamaskState } from '../../contexts/MetamaskContext';
+import { shouldDisplayReconnectButton } from '../../utils';
 
 const Link = styled.a`
   display: flex;
@@ -76,6 +78,23 @@ export const InstallFlaskButton = () => (
   </Link>
 );
 
+export const LinkButton = ({
+  link,
+  title,
+}: {
+  link: string;
+  title: string;
+}) => (
+  <BSButton
+    href={link}
+    variant="link"
+    style={{ textDecoration: 'none', marginRight: 24 }}
+    size="lg"
+  >
+    {title}
+  </BSButton>
+);
+
 export const ConnectButton = (props: ComponentProps<typeof Button>) => {
   return (
     <Button {...props}>
@@ -94,8 +113,15 @@ export const ReconnectButton = (props: ComponentProps<typeof Button>) => {
   );
 };
 
-export const SendHelloButton = (props: ComponentProps<typeof Button>) => {
-  return <Button {...props}>Send message</Button>;
+type ButtonProps = ComponentProps<typeof Button> & { loading?: boolean };
+
+export const SendHelloButton = ({ loading, ...props }: ButtonProps) => {
+  return (
+    <Button {...props}>
+      {loading && <Spinner animation="border" style={{ marginRight: 8 }} />}
+      {props.buttonText}
+    </Button>
+  );
 };
 
 export const HeaderButtons = ({
