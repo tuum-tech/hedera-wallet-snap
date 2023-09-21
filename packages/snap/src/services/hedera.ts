@@ -45,8 +45,7 @@ export type HederaService = {
   getNodeStakingInfo(): Promise<NetworkNodeStakingInfo[]>;
 
   getMirrorAccountInfo(
-    accountId?: AccountId,
-    publicKey?: string,
+    idOrAliasOrEvmAddress: string,
   ): Promise<MirrorAccountInfo>;
 };
 

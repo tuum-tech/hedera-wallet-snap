@@ -1,8 +1,9 @@
 import { useContext, useEffect, useState } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 import { Card, InstallFlaskButton } from '../components/base';
-import { ConnectIdentitySnap } from '../components/cards/ConnectIdentitySnap';
-import { ReconnectIdentitySnap } from '../components/cards/ReconnectIdentitySnap';
+import { ConnectPulseSnap } from '../components/cards/ConnectPulseSnap';
+import { GetAccountInfo } from '../components/cards/GetAccountInfo';
+import { ReconnectPulseSnap } from '../components/cards/ReconnectPulseSnap';
 import { SendHelloHessage } from '../components/cards/SendHelloMessage';
 import { Todo } from '../components/cards/Todo';
 import {
@@ -14,22 +15,14 @@ import {
   Span,
 } from '../config/styles';
 import { MetaMaskContext, MetamaskActions } from '../contexts/MetamaskContext';
+import { Account } from '../types/snap';
 import { connectSnap, getSnap } from '../utils';
 import { hederaNetworks } from '../utils/hedera';
-
-export type Account = {
-  metamaskAddress: string;
-  hederaAccountId: string;
-  hederaEvmAddress: string;
-  network: string;
-};
 
 const Index = () => {
   const [state, dispatch] = useContext(MetaMaskContext);
   const [metamaskAddress, setMetamaskAddress] = useState('');
-  const [currentNetwork, setCurrentNetwork] = useState(
-    hederaNetworks.get('testnet'),
-  );
+  const [currentNetwork, setCurrentNetwork] = useState('');
   const [accountInfo, setAccountInfo] = useState<Account>({} as Account);
 
   useEffect(() => {
@@ -38,6 +31,7 @@ const Index = () => {
 
   const handleConnectClick = async () => {
     try {
+      setCurrentNetwork(hederaNetworks.get('testnet') as string);
       setMetamaskAddress(await connectSnap());
       const installedSnap = await getSnap();
       console.log('Installed Snap: ', installedSnap);
@@ -91,10 +85,21 @@ const Index = () => {
             fullWidth
           />
         )}
-        <ConnectIdentitySnap handleConnectClick={handleConnectClick} />
-        <ReconnectIdentitySnap handleConnectClick={handleConnectClick} />
+        <ConnectPulseSnap handleConnectClick={handleConnectClick} />
+        <ReconnectPulseSnap handleConnectClick={handleConnectClick} />
 
-        <SendHelloHessage setMetamaskAddress={setMetamaskAddress} />
+        <SendHelloHessage
+          setCurrentNetwork={setCurrentNetwork}
+          setMetamaskAddress={setMetamaskAddress}
+          setAccountInfo={setAccountInfo}
+        />
+
+        <GetAccountInfo
+          setCurrentNetwork={setCurrentNetwork}
+          setMetamaskAddress={setMetamaskAddress}
+          setAccountInfo={setAccountInfo}
+        />
+
         <Todo />
       </CardContainer>
       <Notice>

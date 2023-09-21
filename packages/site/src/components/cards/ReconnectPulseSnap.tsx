@@ -7,7 +7,7 @@ type Props = {
   handleConnectClick: () => Promise<void>;
 };
 
-const ReconnectIdentitySnap: FC<Props> = ({ handleConnectClick }) => {
+const ReconnectPulseSnap: FC<Props> = ({ handleConnectClick }) => {
   const [state] = useContext(MetaMaskContext);
 
   return shouldDisplayReconnectButton(state.installedSnap) ? (
@@ -28,4 +28,4 @@ const ReconnectIdentitySnap: FC<Props> = ({ handleConnectClick }) => {
   ) : null;
 };
 
-export { ReconnectIdentitySnap };
+export { ReconnectPulseSnap };

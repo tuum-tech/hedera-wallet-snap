@@ -1,16 +1,27 @@
-import { HederaAccountInfo } from '../../services/hedera';
+import { updateSnapState } from '../../snap/state';
+import { AccountInfo } from '../../types/account';
 import { PulseSnapParams } from '../../types/state';
 
 /**
  * Get account info such as address, did, public key, etc.
  *
  * @param pulseSnapParams - Pulse snap params.
- * @returns Public Account Info.
+ * @returns Account Info.
  */
 export async function getAccountInfo(
   pulseSnapParams: PulseSnapParams,
-): Promise<HederaAccountInfo> {
+): Promise<AccountInfo> {
   const { state, hederaClient } = pulseSnapParams;
 
-  return hederaClient.getAccountInfo(state.currentAccount.hederaAccountId);
+  const response = await hederaClient.getAccountInfo(
+    state.currentAccount.hederaAccountId,
+  );
+  // Let's massage the info we want rather than spitting out everything
+  state.accountState[
+    state.currentAccount.metamaskAddress
+  ].accountInfo.extraData = JSON.parse(JSON.stringify(response));
+
+  await updateSnapState(snap, state);
+
+  return state.accountState[state.currentAccount.metamaskAddress].accountInfo;
 }

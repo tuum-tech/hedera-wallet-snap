@@ -4,10 +4,9 @@ import {
   MetamaskActions,
   MetaMaskContext,
 } from '../../contexts/MetamaskContext';
-import { connectSnap, getSnap, getThemePreference } from '../../utils';
-import { HeaderButtons, LinkButton } from './Buttons';
+import { connectSnap, getSnap } from '../../utils';
+import { HeaderButtons } from './Buttons';
 import { SnapLogo } from './SnapLogo';
-import { Toggle } from './Toggle';
 
 const HeaderWrapper = styled.header`
   display: flex;
@@ -68,17 +67,13 @@ export const Header = ({
     <HeaderWrapper>
       <LogoWrapper>
         <SnapLogo color={theme.colors.icon.default} size={36} />
-        <Title>identify-snap</Title>
+        <Title>hedera-pulse-snap</Title>
       </LogoWrapper>
       <RightContainer>
-        <Toggle
+        {/* <Toggle
           onToggle={handleToggleClick}
           defaultChecked={getThemePreference()}
-        />
-        <LinkButton
-          link={url.includes('/login') ? '/' : '/login'}
-          title={url.includes('/login') ? 'Main Page' : 'DID Auth Login'}
-        />
+        /> */}
         <HeaderButtons state={state} onConnectClick={handleConnectClick} />
       </RightContainer>
     </HeaderWrapper>

@@ -54,7 +54,7 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
 
   switch (request.method) {
     case 'hello':
-      return snap.request({
+      await snap.request({
         method: 'snap_dialog',
         params: {
           type: 'confirmation',
@@ -67,8 +67,14 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
           ]),
         },
       });
+      return {
+        currentAccount: state.currentAccount,
+      };
     case 'getAccountInfo': {
-      return await getAccountInfo(pulseSnapParams);
+      return {
+        currentAccount: state.currentAccount,
+        accountInfo: await getAccountInfo(pulseSnapParams),
+      };
     }
     default:
       throw new Error('Method not found.');

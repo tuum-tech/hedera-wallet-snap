@@ -6,7 +6,7 @@ type Props = {
   handleConnectClick: () => Promise<void>;
 };
 
-const ConnectIdentitySnap: FC<Props> = ({ handleConnectClick }) => {
+const ConnectPulseSnap: FC<Props> = ({ handleConnectClick }) => {
   const [state] = useContext(MetaMaskContext);
 
   if (state.installedSnap) {
@@ -31,4 +31,4 @@ const ConnectIdentitySnap: FC<Props> = ({ handleConnectClick }) => {
   );
 };
 
-export { ConnectIdentitySnap };
+export { ConnectPulseSnap };

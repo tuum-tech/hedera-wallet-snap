@@ -1,16 +1,20 @@
-import { FC, useContext } from 'react';
+import { FC, useContext, useRef, useState } from 'react';
 import {
   MetaMaskContext,
   MetamaskActions,
 } from '../../contexts/MetamaskContext';
+import useModal from '../../hooks/useModal';
 import { Account } from '../../types/snap';
 import {
+  getAccountInfo,
   getCurrentMetamaskAccount,
-  sendHello,
   shouldDisplayReconnectButton,
 } from '../../utils';
 import { hederaNetworks } from '../../utils/hedera';
 import { Card, SendHelloButton } from '../base';
+import ExternalAccount, {
+  GetExternalAccountRef,
+} from '../sections/ExternalAccount';
 
 type Props = {
   setCurrentNetwork: React.Dispatch<React.SetStateAction<string>>;
@@ -18,39 +22,58 @@ type Props = {
   setAccountInfo: React.Dispatch<React.SetStateAction<Account>>;
 };
 
-const SendHelloHessage: FC<Props> = ({
+const GetAccountInfo: FC<Props> = ({
   setCurrentNetwork,
   setMetamaskAddress,
   setAccountInfo,
 }) => {
   const [state, dispatch] = useContext(MetaMaskContext);
+  const [loading, setLoading] = useState(false);
+  const { showModal } = useModal();
 
-  const handleSendHelloClick = async () => {
+  const externalAccountRef = useRef<GetExternalAccountRef>(null);
+
+  const handleGetAccountInfoClick = async () => {
+    setLoading(true);
     try {
       const network = hederaNetworks.get('testnet') as string;
       setCurrentNetwork(network);
       const metamaskAddress = await getCurrentMetamaskAccount();
       setMetamaskAddress(metamaskAddress);
 
-      const response: any = await sendHello(network);
+      const externalAccountParams =
+        externalAccountRef.current?.handleGetAccountParams();
+
+      const response: any = await getAccountInfo(
+        network,
+        externalAccountParams,
+      );
       setAccountInfo(response.currentAccount);
+      const accountInfo = response.accountInfo;
+      console.log('accountInfo: ', JSON.stringify(accountInfo, null, 4));
+      showModal({
+        title: 'Your account info',
+        content: JSON.stringify(accountInfo),
+      });
     } catch (e) {
       console.error(e);
       dispatch({ type: MetamaskActions.SetError, payload: e });
     }
+    setLoading(false);
   };
 
   return (
     <Card
       content={{
-        title: 'Send Hello message',
-        description:
-          'Display a custom message within a confirmation screen in MetaMask.',
+        title: 'getAccountInfo',
+        description: 'Get the current account information',
+        form: <ExternalAccount ref={externalAccountRef} />,
         button: (
           <SendHelloButton
-            buttonText="Send message"
-            onClick={handleSendHelloClick}
+            buttonText="Get Account Info"
+            onClick={handleGetAccountInfoClick}
             disabled={!state.installedSnap}
+            loading={loading}
           />
         ),
       }}
@@ -64,4 +87,4 @@ const SendHelloHessage: FC<Props> = ({
   );
 };
 
-export { SendHelloHessage };
+export { GetAccountInfo };

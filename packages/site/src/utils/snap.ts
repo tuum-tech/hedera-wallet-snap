@@ -1,6 +1,6 @@
 import { MetaMaskInpageProvider } from '@metamask/providers';
 import { defaultSnapOrigin } from '../config';
-import { GetSnapsResponse, Snap } from '../types';
+import { ExternalAccountParams, GetSnapsResponse, Snap } from '../types';
 
 export const getCurrentMetamaskAccount = async (): Promise<string> => {
   const accounts = (await window.ethereum.request({
@@ -88,6 +88,26 @@ export const sendHello = async (network: string) => {
       snapId: defaultSnapOrigin,
       request: {
         method: 'hello',
+        params: { network },
+      },
+    },
+  });
+};
+
+/**
+ * Invoke the "getAccountInfo" method from the snap.
+ */
+
+export const getAccountInfo = async (
+  network: string,
+  externalAccountparams?: ExternalAccountParams,
+) => {
+  return await window.ethereum.request({
+    method: 'wallet_invokeSnap',
+    params: {
+      snapId: defaultSnapOrigin,
+      request: {
+        method: 'getAccountInfo',
         params: { network },
       },
     },

@@ -13,11 +13,9 @@ export async function getHederaAccountIfExists(
 ): Promise<string> {
   let result = '';
   for (const address of Object.keys(state.accountState)) {
-    const { accountIds } = state.accountState[address];
-    for (const hederaAccountId of Object.keys(accountIds)) {
-      if (evmAddress && evmAddress === address) {
-        result = hederaAccountId;
-      }
+    const { accountId, accountInfo } = state.accountState[address];
+    if (accountInfo.evmAddress === evmAddress) {
+      result = accountId;
     }
   }
   return result;

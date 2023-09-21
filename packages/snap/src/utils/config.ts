@@ -1,11 +1,11 @@
 import cloneDeep from 'lodash.clonedeep';
 
-import { Wallet } from '../domain/wallet/abstract';
-import { Account, PulseAccountState, PulseSnapState } from '../types/state';
+import { Account, AccountInfo } from '../types/account';
+import { PulseAccountState, PulseSnapState } from '../types/state';
 
 const emptyAccountState = {
-  wallet: {} as Wallet,
-  accountIds: [],
+  accountId: '',
+  accountInfo: {} as AccountInfo,
 } as PulseAccountState;
 
 export const getEmptyAccountState = () => {

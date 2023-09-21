@@ -1,21 +1,19 @@
 import { SnapsGlobalObject } from '@metamask/snaps-types';
 
 import { divider, heading, text } from '@metamask/snaps-ui';
-import { ec as EC } from 'elliptic';
-import { Wallet } from 'ethers';
 import { MirrorAccountInfo, SimpleHederaClient } from '../services/hedera';
 import {
   HederaServiceImpl,
   isValidHederaAccountInfo,
 } from '../services/impl/hedera';
+import { Account } from '../types/account';
 import { hederaNetworks } from '../types/constants';
 import {
-  Account,
   HederaAccountParams,
   PulseSnapState,
   SnapDialogParams,
 } from '../types/state';
-import { snapGetKeysFromAddressIndex } from '../utils/keyPair';
+import { generateWallet } from '../utils/keyPair';
 import { getHederaAccountIfExists } from '../utils/params';
 import { generateCommonPanel, snapDialog } from './dialog';
 import { validHederaNetwork } from './network';
@@ -79,59 +77,39 @@ export async function importMetaMaskAccount(
   state: PulseSnapState,
   network: string,
 ): Promise<SimpleHederaClient> {
-  // Public key algorithm(secp256k1 or ed25519).
-  /* const slip10TypeNode = await getAddressKeyDeriver(snap, 'ed25519');
-  const _wallet = new Wallet(slip10TypeNode.privateKey as string);
-  console.log('slip10TypeNode: ', _wallet.privateKey, _wallet.address); */
-
-  // We always connect to the first account in Metamask
-  const privateKeyHedera = await snapGetKeysFromAddressIndex('secp256k1', 0);
-  if (!privateKeyHedera) {
-    console.log('Failed to get private keys from Metamask account');
-    throw new Error('Failed to get private keys from Metamask account');
-  }
-
-  const publicKeyHex: string = privateKeyHedera.toStringRaw();
-  const privateKeyHex: string = privateKeyHedera.publicKey.toStringRaw();
-  console.log('publicKey: ', publicKeyHex);
-  console.log('privateKey: ', privateKeyHex);
-
-  const wallet: Wallet = new Wallet(publicKeyHex);
-  const { privateKey, address } = wallet;
-  const hederaEvmAddress = address;
+  const metamaskAddress = await getCurrentMetamaskAccount();
   // Initialize if not there
-  if (!(hederaEvmAddress in state.accountState)) {
+  if (!(metamaskAddress in state.accountState)) {
     console.log(
-      `The address ${hederaEvmAddress} has NOT yet been configured in the Hedera Pulse Snap. Configuring now...`,
+      `The address ${metamaskAddress} has NOT yet been configured in the Hedera Pulse Snap. Configuring now...`,
     );
-    await initAccountState(snap, state, hederaEvmAddress);
+    await initAccountState(snap, state, metamaskAddress);
   }
 
-  const ec = new EC('secp256k1');
-  const compressPublicKey = (uncompressedKeyHex: string): string => {
-    // Remove the '0x' prefix if it exists
-    const keyWithoutPrefix = uncompressedKeyHex.startsWith('0x')
-      ? uncompressedKeyHex.slice(2)
-      : uncompressedKeyHex;
-    // Check if the public key is valid for secp256k1
-    try {
-      const publicKey = ec.keyFromPublic(keyWithoutPrefix, 'hex');
-      return publicKey.getPublic(true, 'hex');
-    } catch (error) {
-      // If the public key is not valid for secp256k1, return the original key because it's likely ed25519
-      return uncompressedKeyHex;
-    }
-  };
-  const publicKey = compressPublicKey(publicKeyHex);
+  const res = await generateWallet(metamaskAddress);
+  if (!res) {
+    console.log('Failed to generate snap wallet for DID operations');
+    throw new Error('Failed to generate snap wallet for DID operations');
+  }
+
+  const { privateKey, publicKey, address: hederaEvmAddress } = res;
 
   let hederaAccountId = await getHederaAccountIfExists(state, hederaEvmAddress);
   if (!hederaAccountId) {
     const hederaService = new HederaServiceImpl(network);
     const accountInfo: MirrorAccountInfo =
-      await hederaService.getMirrorAccountInfo(undefined, publicKey);
-    console.log('accountInfo: ', accountInfo);
+      await hederaService.getMirrorAccountInfo(hederaEvmAddress);
     if (accountInfo) {
       hederaAccountId = accountInfo.account;
+      // eslint-disable-next-line require-atomic-updates
+      state.accountState[metamaskAddress].accountId = hederaAccountId;
+      // eslint-disable-next-line require-atomic-updates
+      state.accountState[metamaskAddress].accountInfo = {
+        alias: accountInfo.alias,
+        createdTime: accountInfo.created_timestamp,
+        evmAddress: accountInfo.evm_address,
+        memo: accountInfo.memo,
+      };
     }
 
     if (!hederaAccountId) {
@@ -166,22 +144,20 @@ export async function importMetaMaskAccount(
   );
   if (!hederaClient) {
     console.error(
-      `Could not retrieve hedera account info using the accountId '${hederaAccountId}'`,
+      `Could not setup a Hedera client with '${hederaAccountId}' at this time. Please try again later.`,
     );
     throw new Error(
-      `Could not retrieve hedera account info using the accountId '${hederaAccountId}'`,
+      `Could not setup a Hedera client with '${hederaAccountId}' at this time. Please try again later.`,
     );
   }
 
   // eslint-disable-next-line require-atomic-updates
   state.currentAccount = {
-    metamaskAddress: await getCurrentMetamaskAccount(),
+    metamaskAddress,
     hederaAccountId,
     hederaEvmAddress,
     network,
   } as Account;
-  // eslint-disable-next-line require-atomic-updates
-  state.accountState[hederaEvmAddress].accountIds = [hederaAccountId];
 
   await updateSnapState(snap, state);
 

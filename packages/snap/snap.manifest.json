@@ -7,7 +7,7 @@
     "url": "https://github.com/tuum-tech/hedera-pulse.git"
   },
   "source": {
-    "shasum": "ADfoF7fad90I/D4rpX1gMZg6Sqp7QMLucawUlMrF0+4=",
+    "shasum": "nZMyWG6rvwVdvq2Y0p3bX9V1NHswUMknHd9E1T8NzSk=",
     "location": {
       "npm": {
         "filePath": "dist/snap.js",
@@ -24,24 +24,7 @@
       "snaps": true
     },
     "snap_manageState": {},
-    "snap_getBip32Entropy": [
-      {
-        "path": [
-          "m",
-          "44'",
-          "3030'"
-        ],
-        "curve": "ed25519"
-      },
-      {
-        "path": [
-          "m",
-          "44'",
-          "3030'"
-        ],
-        "curve": "secp256k1"
-      }
-    ],
+    "snap_getEntropy": {},
     "endowment:ethereum-provider": {},
     "endowment:network-access": {}
   },

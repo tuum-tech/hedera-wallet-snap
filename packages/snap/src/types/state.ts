@@ -1,15 +1,8 @@
 import { SnapsGlobalObject } from '@metamask/snaps-types';
 import { Panel } from '@metamask/snaps-ui';
 
-import { Wallet } from '../domain/wallet/abstract';
 import { SimpleHederaClient } from '../services/hedera';
-
-export type Account = {
-  metamaskAddress: string; // This is not being used currently
-  hederaAccountId: string;
-  hederaEvmAddress: string;
-  network: string;
-};
+import { Account, AccountInfo } from './account';
 
 export type PulseSnapState = {
   currentAccount: Account;
@@ -40,10 +33,8 @@ export type PulseSnapConfig = {
  * Pulse Snap State for a MetaMask address
  */
 export type PulseAccountState = {
-  wallet: Wallet;
-  accountIds: string[];
-
-  index?: number;
+  accountId: string;
+  accountInfo: AccountInfo;
 };
 
 export type PulseSnapParams = {

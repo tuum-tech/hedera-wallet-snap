@@ -124,18 +124,10 @@ export class HederaServiceImpl implements HederaService {
   }
 
   async getMirrorAccountInfo(
-    accountId?: AccountId,
-    publicKey?: string,
+    idOrAliasOrEvmAddress: string,
   ): Promise<MirrorAccountInfo> {
-    let url = `https://${this.urlBase}.mirrornode.hedera.com/api/v1/accounts`;
-    if (publicKey) {
-      url = `${url}?account.publickey=${publicKey}`;
-    } else {
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      url = `${url}/${accountId?.toString()}`;
-    }
-    const response = await fetchDataFromUrl(url);
-    return response.data;
+    const url = `https://${this.urlBase}.mirrornode.hedera.com/api/v1/accounts/${idOrAliasOrEvmAddress}`;
+    return await fetchDataFromUrl(url);
   }
 }
 

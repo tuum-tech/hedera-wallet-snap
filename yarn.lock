@@ -6858,18 +6858,14 @@ __metadata:
     "@metamask/snaps-types": ^1.0.1
     "@metamask/snaps-ui": ^1.0.1
     "@metamask/snaps-webpack-plugin": ^1.0.2
-    "@types/elliptic": ^6.4.14
     "@types/jest": ^29.5.0
-    "@types/jsonpath": ^0.2.0
     "@types/lodash.clonedeep": ^4.5.7
-    "@types/uuid": ^9.0.1
     "@typescript-eslint/eslint-plugin": ^5.57.1
     "@typescript-eslint/parser": ^5.57.1
     babel-loader: ^9.1.2
     bignumber.js: ^9.1.1
     chokidar-cli: ^3.0.0
     concurrently: ^8.2.1
-    elliptic: ^6.5.4
     eslint: ^8.38.0
     eslint-config-prettier: ^8.8.0
     eslint-plugin-import: ^2.27.5
@@ -6887,7 +6883,6 @@ __metadata:
     prettier-plugin-packagejson: ^2.4.3
     rimraf: ^5.0.0
     ts-node: ^10.9.1
-    tweetnacl: ^1.0.3
     typescript: ^5.0.4
     webpack: ^5.78.0
     webpack-cli: ^5.0.1
@@ -6951,7 +6946,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/bn.js@npm:*, @types/bn.js@npm:^5.1.0":
+"@types/bn.js@npm:^5.1.0":
   version: 5.1.2
   resolution: "@types/bn.js@npm:5.1.2"
   dependencies:
@@ -7032,15 +7027,6 @@ __metadata:
   version: 1.1.0
   resolution: "@types/deep-freeze-strict@npm:1.1.0"
   checksum: 29819f8e53cd6e0e82be7878a113291363c4c5f7e43804f71a37667d845e68977245985c1f116cb04dc1c4eceffa499735b26acf5a3d25a30fc4557a88e95b18
-  languageName: node
-  linkType: hard
-
-"@types/elliptic@npm:^6.4.14":
-  version: 6.4.14
-  resolution: "@types/elliptic@npm:6.4.14"
-  dependencies:
-    "@types/bn.js": "*"
-  checksum: d5a64f540e0ed4b74a12dfa5cc88c0aa7b531eab3b7a9fab17948ffbfc6e01814230e63d7417ce1b607dbd8b5d70e1b64f5afac632deabf96e44875aaac0ae1b
   languageName: node
   linkType: hard
 
@@ -7221,13 +7207,6 @@ __metadata:
   version: 0.0.29
   resolution: "@types/json5@npm:0.0.29"
   checksum: e60b153664572116dfea673c5bda7778dbff150498f44f998e34b5886d8afc47f16799280e4b6e241c0472aef1bc36add771c569c68fc5125fc2ae519a3eb9ac
-  languageName: node
-  linkType: hard
-
-"@types/jsonpath@npm:^0.2.0":
-  version: 0.2.1
-  resolution: "@types/jsonpath@npm:0.2.1"
-  checksum: f48cc54fc13b810c503a558d7a71ee136226ff2dd7f319afd2229983c7594d741cd4385e17814ab81bd7348b9a7c479c55fe2ef5ca3cabc6fa172cad2087e775
   languageName: node
   linkType: hard
 
@@ -7501,13 +7480,6 @@ __metadata:
   version: 0.0.3
   resolution: "@types/use-sync-external-store@npm:0.0.3"
   checksum: 161ddb8eec5dbe7279ac971531217e9af6b99f7783213566d2b502e2e2378ea19cf5e5ea4595039d730aa79d3d35c6567d48599f69773a02ffcff1776ec2a44e
-  languageName: node
-  linkType: hard
-
-"@types/uuid@npm:^9.0.1":
-  version: 9.0.4
-  resolution: "@types/uuid@npm:9.0.4"
-  checksum: 356e2504456eaebbc43a5af5ca6c07d71f5ae5520b5767cb1c62cd0ec55475fc4ee3d16a2874f4a5fce78e40e8583025afd3a7d9ba41f82939de310665f53f0e
   languageName: node
   linkType: hard
 

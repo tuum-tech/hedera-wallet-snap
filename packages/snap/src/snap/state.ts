@@ -1,6 +1,7 @@
 import { SnapsGlobalObject } from '@metamask/snaps-types';
 
-import { Account, PulseSnapState } from '../types/state';
+import { Account } from '../types/account';
+import { PulseSnapState } from '../types/state';
 import { getEmptyAccountState, getInitialSnapState } from '../utils/config';
 
 /**
