@@ -1,4 +1,8 @@
+// Bootstrap CSS
 import 'bootstrap/dist/css/bootstrap.min.css';
+// Bootstrap Bundle JS
+import 'bootstrap/dist/js/bootstrap.bundle.min';
+
 import { FunctionComponent, ReactNode, useContext } from 'react';
 import styled from 'styled-components';
 import { Footer, Header, Modal } from './components/base';

@@ -70,10 +70,12 @@ export const Header = ({
         <Title>hedera-pulse-snap</Title>
       </LogoWrapper>
       <RightContainer>
-        {/* <Toggle
-          onToggle={handleToggleClick}
-          defaultChecked={getThemePreference()}
-        /> */}
+        {/*      {
+          <Toggle
+            onToggle={handleToggleClick}
+            defaultChecked={getThemePreference()}
+          />
+        } */}
         <HeaderButtons state={state} onConnectClick={handleConnectClick} />
       </RightContainer>
     </HeaderWrapper>
