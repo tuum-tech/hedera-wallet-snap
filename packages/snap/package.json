@@ -50,8 +50,10 @@
     "@metamask/snaps-types": "^1.0.1",
     "@metamask/snaps-ui": "^1.0.1",
     "bignumber.js": "^9.1.1",
+    "elliptic": "^6.5.4",
     "ethers": "^6.3.0",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.21.0",
@@ -73,6 +75,7 @@
     "@metamask/snaps-cli": "^0.32.2",
     "@metamask/snaps-jest": "^0.35.1-flask.1",
     "@metamask/snaps-webpack-plugin": "^1.0.2",
+    "@types/elliptic": "^6.4.14",
     "@types/jest": "^29.5.0",
     "@types/jsonpath": "^0.2.0",
     "@types/lodash.clonedeep": "^4.5.7",

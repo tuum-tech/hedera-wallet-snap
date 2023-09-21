@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "moduleResolution": "node",
     "experimentalDecorators": true,
     "outDir": "./dist",
     "baseUrl": ".",

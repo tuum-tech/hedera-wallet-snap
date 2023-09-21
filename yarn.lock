@@ -6858,6 +6858,7 @@ __metadata:
     "@metamask/snaps-types": ^1.0.1
     "@metamask/snaps-ui": ^1.0.1
     "@metamask/snaps-webpack-plugin": ^1.0.2
+    "@types/elliptic": ^6.4.14
     "@types/jest": ^29.5.0
     "@types/jsonpath": ^0.2.0
     "@types/lodash.clonedeep": ^4.5.7
@@ -6868,6 +6869,7 @@ __metadata:
     bignumber.js: ^9.1.1
     chokidar-cli: ^3.0.0
     concurrently: ^8.2.1
+    elliptic: ^6.5.4
     eslint: ^8.38.0
     eslint-config-prettier: ^8.8.0
     eslint-plugin-import: ^2.27.5
@@ -6885,6 +6887,7 @@ __metadata:
     prettier-plugin-packagejson: ^2.4.3
     rimraf: ^5.0.0
     ts-node: ^10.9.1
+    tweetnacl: ^1.0.3
     typescript: ^5.0.4
     webpack: ^5.78.0
     webpack-cli: ^5.0.1
@@ -6948,7 +6951,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/bn.js@npm:^5.1.0":
+"@types/bn.js@npm:*, @types/bn.js@npm:^5.1.0":
   version: 5.1.2
   resolution: "@types/bn.js@npm:5.1.2"
   dependencies:
@@ -7029,6 +7032,15 @@ __metadata:
   version: 1.1.0
   resolution: "@types/deep-freeze-strict@npm:1.1.0"
   checksum: 29819f8e53cd6e0e82be7878a113291363c4c5f7e43804f71a37667d845e68977245985c1f116cb04dc1c4eceffa499735b26acf5a3d25a30fc4557a88e95b18
+  languageName: node
+  linkType: hard
+
+"@types/elliptic@npm:^6.4.14":
+  version: 6.4.14
+  resolution: "@types/elliptic@npm:6.4.14"
+  dependencies:
+    "@types/bn.js": "*"
+  checksum: d5a64f540e0ed4b74a12dfa5cc88c0aa7b531eab3b7a9fab17948ffbfc6e01814230e63d7417ce1b607dbd8b5d70e1b64f5afac632deabf96e44875aaac0ae1b
   languageName: node
   linkType: hard
 

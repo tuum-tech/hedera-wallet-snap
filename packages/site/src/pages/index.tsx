@@ -14,8 +14,8 @@ import {
   Span,
 } from '../config/styles';
 import { MetaMaskContext, MetamaskActions } from '../contexts/MetamaskContext';
-import { connectSnap, getCurrentNetwork, getSnap } from '../utils';
-import { getNetwork } from '../utils/hedera';
+import { connectSnap, getSnap } from '../utils';
+import { hederaNetworks } from '../utils/hedera';
 
 export type Account = {
   metamaskAddress: string;
@@ -27,19 +27,18 @@ export type Account = {
 const Index = () => {
   const [state, dispatch] = useContext(MetaMaskContext);
   const [metamaskAddress, setMetamaskAddress] = useState('');
-  const [currentNetwork, setCurrentNetwork] = useState('');
-  const [currentChainId, setCurrentChainId] = useState('');
+  const [currentNetwork, setCurrentNetwork] = useState(
+    hederaNetworks.get('testnet'),
+  );
   const [accountInfo, setAccountInfo] = useState<Account>({} as Account);
 
   useEffect(() => {
     setMetamaskAddress(metamaskAddress);
-    setCurrentNetwork(getNetwork(currentChainId));
-  }, [metamaskAddress, currentNetwork, currentChainId]);
+  }, [metamaskAddress]);
 
   const handleConnectClick = async () => {
     try {
       setMetamaskAddress(await connectSnap());
-      setCurrentChainId(await getCurrentNetwork());
       const installedSnap = await getSnap();
       console.log('Installed Snap: ', installedSnap);
 
@@ -95,7 +94,7 @@ const Index = () => {
         <ConnectIdentitySnap handleConnectClick={handleConnectClick} />
         <ReconnectIdentitySnap handleConnectClick={handleConnectClick} />
 
-        <SendHelloHessage setCurrentChainId={setCurrentChainId} />
+        <SendHelloHessage setMetamaskAddress={setMetamaskAddress} />
         <Todo />
       </CardContainer>
       <Notice>

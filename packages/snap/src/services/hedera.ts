@@ -42,13 +42,11 @@ export type HederaService = {
     accountId: AccountId;
   }): Promise<SimpleHederaClient | null>;
 
-  getNodeStakingInfo(
-    network: 'mainnet' | 'testnet' | 'previewnet',
-  ): Promise<NetworkNodeStakingInfo[]>;
+  getNodeStakingInfo(): Promise<NetworkNodeStakingInfo[]>;
 
   getMirrorAccountInfo(
-    network: 'mainnet' | 'testnet' | 'previewnet',
-    accountId: AccountId,
+    accountId?: AccountId,
+    publicKey?: string,
   ): Promise<MirrorAccountInfo>;
 };
 
@@ -87,9 +85,31 @@ export type NetworkNodeStakingInfo = {
 
 export type MirrorAccountInfo = {
   account: string;
+  alias: string;
+  auto_renew_period: Long;
+  balance: {
+    balance: Long;
+    timestamp: Timestamp;
+    tokens: [];
+  };
+  created_timestamp: Timestamp;
+  decline_reward: boolean;
+  deleted: boolean;
+  ethereum_nonce: Long;
+  evm_address: string;
+  expiry_timestamp: Timestamp;
+  key: {
+    _type: string;
+    key: string;
+  };
+  max_automatic_token_associations: Long;
+  memo: string;
+  pending_reward: Long;
+  receiver_sig_required: boolean;
   staked_account_id?: string;
   staked_node_id?: number;
   stake_period_start?: number;
+  transactions: [];
 };
 
 export type HederaAccountInfo = {

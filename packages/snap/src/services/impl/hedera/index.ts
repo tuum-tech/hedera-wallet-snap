@@ -25,8 +25,22 @@ export class HederaServiceImpl implements HederaService {
   // eslint-disable-next-line no-restricted-syntax
   private readonly network: string;
 
+  // eslint-disable-next-line no-restricted-syntax
+  private readonly urlBase: string;
+
   constructor(network: string) {
     this.network = network;
+    // eslint-disable-next-line default-case
+    switch (network) {
+      case 'testnet':
+        this.urlBase = 'testnet';
+        break;
+      case 'previewnet':
+        this.urlBase = 'previewnet';
+        break;
+      default:
+        this.urlBase = 'mainnet-public';
+    }
   }
 
   async createClient(options: {
@@ -64,25 +78,9 @@ export class HederaServiceImpl implements HederaService {
     return new SimpleHederaClientImpl(client, privateKey);
   }
 
-  async getNodeStakingInfo(
-    network: 'mainnet' | 'testnet' | 'previewnet',
-  ): Promise<NetworkNodeStakingInfo[]> {
-    let urlBase = '';
-    // eslint-disable-next-line default-case
-    switch (network) {
-      case 'mainnet':
-        urlBase = 'mainnet-public';
-        break;
-      case 'testnet':
-        urlBase = 'testnet';
-        break;
-      case 'previewnet':
-        urlBase = 'previewnet';
-        break;
-    }
-
+  async getNodeStakingInfo(): Promise<NetworkNodeStakingInfo[]> {
     const response = await fetchDataFromUrl(
-      `https://${urlBase}.mirrornode.hedera.com/api/v1/network/nodes?order=asc&limit=25`,
+      `https://${this.urlBase}.mirrornode.hedera.com/api/v1/network/nodes?order=asc&limit=25`,
     );
     const result: NetworkNodeStakingInfo[] = [];
     for (const node of response.data.nodes) {
@@ -102,7 +100,7 @@ export class HederaServiceImpl implements HederaService {
 
     if (response.data.links.next) {
       const secondResponse = await fetchDataFromUrl(
-        `https://${urlBase}.mirrornode.hedera.com${
+        `https://${this.urlBase}.mirrornode.hedera.com${
           response.data.links.next as string
         }`,
       );
@@ -126,26 +124,17 @@ export class HederaServiceImpl implements HederaService {
   }
 
   async getMirrorAccountInfo(
-    network: 'mainnet' | 'testnet' | 'previewnet',
-    accountId: AccountId,
+    accountId?: AccountId,
+    publicKey?: string,
   ): Promise<MirrorAccountInfo> {
-    let urlBase = '';
-    // eslint-disable-next-line default-case
-    switch (network) {
-      case 'mainnet':
-        urlBase = 'mainnet-public';
-        break;
-      case 'testnet':
-        urlBase = 'testnet';
-        break;
-      case 'previewnet':
-        urlBase = 'previewnet';
-        break;
+    let url = `https://${this.urlBase}.mirrornode.hedera.com/api/v1/accounts`;
+    if (publicKey) {
+      url = `${url}?account.publickey=${publicKey}`;
+    } else {
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      url = `${url}/${accountId?.toString()}`;
     }
-
-    const response = await fetchDataFromUrl(
-      `https://${urlBase}.mirrornode.hedera.com/api/v1/accounts/${accountId.toString()}`,
-    );
+    const response = await fetchDataFromUrl(url);
     return response.data;
   }
 }

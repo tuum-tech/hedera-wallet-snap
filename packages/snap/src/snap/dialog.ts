@@ -53,11 +53,13 @@ export async function generateCommonPanel(
  *
  * @param origin - Source.
  * @param snap - SnapGlobalObject.
+ * @param publicKey - Public key.
  * @param address - EVM address.
  */
 export async function requestHederaAccountId(
   origin: string,
   snap: SnapsGlobalObject,
+  publicKey: string,
   address: string,
 ): Promise<string> {
   const dialogParamsForHederaAccountId: SnapDialogParams = {
@@ -68,7 +70,9 @@ export async function requestHederaAccountId(
         `Enter your hedera account Id associated with the following account`,
       ),
       divider(),
+      text(`Public Key: ${publicKey}`),
       text(`EVM Address: ${address}`),
+      divider(),
     ]),
     placeholder: '0.0.3658062',
   };
