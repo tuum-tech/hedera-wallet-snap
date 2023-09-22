@@ -1,9 +1,14 @@
 import cloneDeep from 'lodash.clonedeep';
 
 import { Account, AccountInfo } from '../types/account';
-import { PulseAccountState, PulseSnapState } from '../types/state';
+import { KeyStore, PulseAccountState, PulseSnapState } from '../types/state';
 
 const emptyAccountState = {
+  keyStore: {
+    privateKey: '',
+    publicKey: '',
+    address: '',
+  } as KeyStore,
   accountId: '',
   accountInfo: {} as AccountInfo,
 } as PulseAccountState;

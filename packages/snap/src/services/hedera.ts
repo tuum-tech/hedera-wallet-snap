@@ -10,6 +10,7 @@ import type {
   Timestamp,
   TokenAllowance,
   TokenNftAllowance,
+  TransactionReceipt,
 } from '@hashgraph/sdk';
 import TokenRelationshipMap from '@hashgraph/sdk/lib/account/TokenRelationshipMap';
 import Duration from '@hashgraph/sdk/lib/Duration';
@@ -19,16 +20,23 @@ import { BigNumber } from 'bignumber.js';
 
 import { Wallet } from '../domain/wallet/abstract';
 
+export interface SimpleTransfer {
+  // HBAR or Token ID (as string)
+  asset?: string;
+  to?: AccountId;
+  // amount must be in low denom
+  amount?: BigNumber.Instance;
+}
+
+export type Token = {
+  token_id: string;
+  balance: BigNumber;
+};
+
 export type AccountBalance = {
   // balance here in hbars
   hbars: BigNumber;
-  tokens: Map<string, TokenBalance>;
-};
-
-export type TokenBalance = {
-  // balance has already had decimals applied
-  balance: BigNumber;
-  decimals: number;
+  tokens: Map<string, BigNumber>;
 };
 
 export type HederaService = {
@@ -62,7 +70,15 @@ export type SimpleHederaClient = {
   getAccountInfo(accountId: string): Promise<HederaAccountInfo>;
 
   // returns the account balance in HBARs
-  getAccountBalance(): Promise<AccountBalance>;
+  getAccountBalance(): Promise<BigNumber>;
+
+  transferCrypto(options: {
+    currentBalance: AccountBalance;
+    transfers: SimpleTransfer[];
+    memo: string | null;
+    maxFee: BigNumber | null; // tinybars
+    onBeforeConfirm?: () => void;
+  }): Promise<TransactionReceipt>;
 };
 
 export type NetworkNodeStakingInfo = {
@@ -87,7 +103,7 @@ export type MirrorAccountInfo = {
   alias: string;
   auto_renew_period: Long;
   balance: {
-    balance: Long;
+    balance: BigNumber;
     timestamp: Timestamp;
     tokens: [];
   };

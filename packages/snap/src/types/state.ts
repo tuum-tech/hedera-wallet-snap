@@ -1,7 +1,5 @@
-import { SnapsGlobalObject } from '@metamask/snaps-types';
 import { Panel } from '@metamask/snaps-ui';
 
-import { SimpleHederaClient } from '../services/hedera';
 import { Account, AccountInfo } from './account';
 
 export type PulseSnapState = {
@@ -29,19 +27,24 @@ export type PulseSnapConfig = {
   };
 };
 
+export type KeyStore = {
+  privateKey: string;
+  publicKey: string;
+  address: string;
+};
+
 /**
  * Pulse Snap State for a MetaMask address
  */
 export type PulseAccountState = {
+  keyStore: KeyStore;
   accountId: string;
   accountInfo: AccountInfo;
 };
 
 export type PulseSnapParams = {
   origin: string;
-  snap: SnapsGlobalObject;
   state: PulseSnapState;
-  hederaClient: SimpleHederaClient;
 };
 
 export type SnapDialogParams = {

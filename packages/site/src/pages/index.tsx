@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import { useContext, useEffect, useState } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 import { Card, InstallFlaskButton } from '../components/base';
@@ -65,6 +66,14 @@ const Index = () => {
             <dd>{accountInfo?.hederaAccountId}</dd>
             <dt>Hedera EVM Address: </dt>
             <dd>{accountInfo?.hederaEvmAddress}</dd>
+            <dt>Balance: </dt>
+            <dd>
+              {accountInfo?.balance?.hbars
+                ? `${new BigNumber(accountInfo?.balance?.hbars)
+                    .dividedBy(1e8)
+                    .toString()} Hbar`
+                : ''}
+            </dd>
           </Col>
         </Row>
       </Container>

@@ -1,12 +1,16 @@
 import { OnRpcRequestHandler } from '@metamask/snaps-types';
 import { panel, text } from '@metamask/snaps-ui';
 
+import _ from 'lodash';
+import { getAccountBalance } from './rpc/account/getAccountBalance';
 import { getAccountInfo } from './rpc/account/getAccountInfo';
-import { SimpleHederaClient } from './services/hedera';
-import { getCurrentAccount } from './snap/account';
+import { sendHbarToAccountId } from './rpc/account/sendHbarToAccountId';
+import { setCurrentAccount } from './snap/account';
 import { getSnapStateUnchecked } from './snap/state';
+import { TransferCryptoRequestParams } from './types/params';
 import { PulseSnapParams } from './types/state';
 import { init } from './utils/init';
+import { isValidTransferCryptoParams } from './utils/params';
 
 /**
  * Handle incoming JSON-RPC requests, sent through `wallet_invokeSnap`.
@@ -31,25 +35,26 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
   );
 
   let state = await getSnapStateUnchecked(snap);
-  if (state === null) {
+  if (state === null || _.isEmpty(state)) {
     state = await init(origin, snap);
   }
-  console.log('state:', JSON.stringify(state, null, 4));
-
-  const hederaClient: SimpleHederaClient = await getCurrentAccount(
-    origin,
-    state,
-    request.params,
+  console.log(
+    'state:',
+    JSON.stringify(
+      state,
+      (key, value) => (key === 'hederaClient' ? undefined : value),
+      4,
+    ),
   );
+
+  await setCurrentAccount(origin, state, request.params);
   console.log(
     `Current account: ${JSON.stringify(state.currentAccount, null, 4)}`,
   );
 
   const pulseSnapParams: PulseSnapParams = {
     origin,
-    snap,
     state,
-    hederaClient,
   };
 
   switch (request.method) {
@@ -74,6 +79,22 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
       return {
         currentAccount: state.currentAccount,
         accountInfo: await getAccountInfo(pulseSnapParams),
+      };
+    }
+    case 'getAccountBalance': {
+      return {
+        currentAccount: state.currentAccount,
+        accountBalance: await getAccountBalance(pulseSnapParams),
+      };
+    }
+    case 'sendHbarToAccountId': {
+      isValidTransferCryptoParams(request.params);
+      return {
+        currentAccount: state.currentAccount,
+        result: await sendHbarToAccountId(
+          pulseSnapParams,
+          request.params as TransferCryptoRequestParams,
+        ),
       };
     }
     default:

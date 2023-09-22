@@ -1,22 +1,14 @@
-import { PulseSnapState } from '../types/state';
+import { TransferCryptoRequestParams } from '../types/params';
 
 /**
- * Check if Hedera account was imported.
+ * Check Validation of Resolve DID request.
  *
- * @param state - PulseSnapState.
- * @param evmAddress - Ethereum address.
- * @returns Result.
+ * @param params - Request params.
  */
-export async function getHederaAccountIfExists(
-  state: PulseSnapState,
-  evmAddress: string,
-): Promise<string> {
-  let result = '';
-  for (const address of Object.keys(state.accountState)) {
-    const { accountId, accountInfo } = state.accountState[address];
-    if (accountInfo.evmAddress === evmAddress) {
-      result = accountId;
-    }
-  }
-  return result;
+export function isValidTransferCryptoParams(
+  params: unknown,
+): asserts params is TransferCryptoRequestParams {
+  const parameter = params as TransferCryptoRequestParams;
+  console.log('parameter: ', parameter);
+  // TODO
 }

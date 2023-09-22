@@ -7,7 +7,7 @@
     "url": "https://github.com/tuum-tech/hedera-pulse.git"
   },
   "source": {
-    "shasum": "nZMyWG6rvwVdvq2Y0p3bX9V1NHswUMknHd9E1T8NzSk=",
+    "shasum": "8IcyNpoN+sdKbK4hVbAUaKDP9j9yYRK5bjdjer4zVIc=",
     "location": {
       "npm": {
         "filePath": "dist/snap.js",

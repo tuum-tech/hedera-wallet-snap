@@ -12,7 +12,7 @@ import _ from 'lodash';
 
 import { Wallet } from '../../../domain/wallet/abstract';
 import { PrivateKeySoftwareWallet } from '../../../domain/wallet/software-private-key';
-import { fetchDataFromUrl } from '../../../utils/fetch';
+import { FetchResponse, fetchDataFromUrl } from '../../../utils/fetch';
 import {
   HederaService,
   MirrorAccountInfo,
@@ -79,32 +79,12 @@ export class HederaServiceImpl implements HederaService {
   }
 
   async getNodeStakingInfo(): Promise<NetworkNodeStakingInfo[]> {
-    const response = await fetchDataFromUrl(
-      `https://${this.urlBase}.mirrornode.hedera.com/api/v1/network/nodes?order=asc&limit=25`,
-    );
     const result: NetworkNodeStakingInfo[] = [];
-    for (const node of response.data.nodes) {
-      result.push({
-        description: node.description,
-        node_id: node.node_id,
-        node_account_id: node.node_account_id,
-        min_stake: new BigNumber(node.min_stake),
-        max_stake: new BigNumber(node.max_stake),
-        stake: new BigNumber(node.stake),
-        stake_rewarded: new BigNumber(node.stake_rewarded),
-        stake_not_rewarded: new BigNumber(node.stake_not_rewarded),
-        reward_rate_start: new BigNumber(node.reward_rate_start),
-        staking_period: node.staking_period,
-      });
-    }
 
-    if (response.data.links.next) {
-      const secondResponse = await fetchDataFromUrl(
-        `https://${this.urlBase}.mirrornode.hedera.com${
-          response.data.links.next as string
-        }`,
-      );
-      for (const node of secondResponse.data.nodes) {
+    const url = `https://${this.urlBase}.mirrornode.hedera.com/api/v1/network/nodes?order=asc&limit=25`;
+    const response: FetchResponse = await fetchDataFromUrl(url);
+    if (response.success) {
+      for (const node of response.data.nodes) {
         result.push({
           description: node.description,
           node_id: node.node_id,
@@ -118,6 +98,29 @@ export class HederaServiceImpl implements HederaService {
           staking_period: node.staking_period,
         });
       }
+
+      if (response.data.links.next) {
+        const secondUrl = `https://${this.urlBase}.mirrornode.hedera.com${
+          response.data.links.next as string
+        }`;
+        const secondResponse: FetchResponse = await fetchDataFromUrl(secondUrl);
+        if (secondResponse.success) {
+          for (const node of secondResponse.data.nodes) {
+            result.push({
+              description: node.description,
+              node_id: node.node_id,
+              node_account_id: node.node_account_id,
+              min_stake: new BigNumber(node.min_stake),
+              max_stake: new BigNumber(node.max_stake),
+              stake: new BigNumber(node.stake),
+              stake_rewarded: new BigNumber(node.stake_rewarded),
+              stake_not_rewarded: new BigNumber(node.stake_not_rewarded),
+              reward_rate_start: new BigNumber(node.reward_rate_start),
+              staking_period: node.staking_period,
+            });
+          }
+        }
+      }
     }
 
     return result;
@@ -126,8 +129,13 @@ export class HederaServiceImpl implements HederaService {
   async getMirrorAccountInfo(
     idOrAliasOrEvmAddress: string,
   ): Promise<MirrorAccountInfo> {
+    let result = {} as MirrorAccountInfo;
     const url = `https://${this.urlBase}.mirrornode.hedera.com/api/v1/accounts/${idOrAliasOrEvmAddress}`;
-    return await fetchDataFromUrl(url);
+    const response: FetchResponse = await fetchDataFromUrl(url);
+    if (response.success) {
+      result = response.data;
+    }
+    return result;
   }
 }
 
@@ -176,7 +184,7 @@ async function testClientOperatorMatch(client: Client) {
  * @param _accountId - Account Id.
  * @param _network - Network.
  */
-export async function isValidHederaAccountInfo(
+export async function getHederaClient(
   _privateKey: string,
   _accountId: string,
   _network: string,

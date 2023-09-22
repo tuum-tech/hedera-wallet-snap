@@ -1,18 +1,21 @@
 import {
-  AccountInfo,
-  AccountInfoQuery,
+  TransactionReceipt,
   type AccountId,
   type Client,
   type PrivateKey,
   type PublicKey,
 } from '@hashgraph/sdk';
 
+import BigNumber from 'bignumber.js';
 import {
   AccountBalance,
   HederaAccountInfo,
   SimpleHederaClient,
+  SimpleTransfer,
 } from '../../../hedera';
-import { getAccountBalance } from './get-account-balance';
+import { getAccountBalance } from './getAccountBalance';
+import { getAccountInfo } from './getAccountInfo';
+import { transferCrypto } from './transferCrypto';
 
 export class SimpleHederaClientImpl implements SimpleHederaClient {
   // eslint-disable-next-line no-restricted-syntax
@@ -41,19 +44,20 @@ export class SimpleHederaClientImpl implements SimpleHederaClient {
   }
 
   async getAccountInfo(accountId: string): Promise<HederaAccountInfo> {
-    // Create the account info query
-    const query = new AccountInfoQuery().setAccountId(accountId);
-
-    // Sign with client operator private key and submit the query to a Hedera network
-    const accountInfo: AccountInfo = await query.execute(this._client);
-
-    return accountInfo as unknown as HederaAccountInfo;
+    return getAccountInfo(this._client, accountId);
   }
 
-  async getAccountBalance(): Promise<AccountBalance> {
-    // NOTE: important, ensure that we pre-compute the health state of all nodes
-    await this._client.pingAll();
-
+  async getAccountBalance(): Promise<BigNumber> {
     return getAccountBalance(this._client);
+  }
+
+  transferCrypto(options: {
+    currentBalance: AccountBalance;
+    transfers: SimpleTransfer[];
+    memo: string | null;
+    maxFee: BigNumber | null;
+    onBeforeConfirm?: () => void;
+  }): Promise<TransactionReceipt> {
+    return transferCrypto(this._client, options);
   }
 }

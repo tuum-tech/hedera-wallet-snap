@@ -1,28 +1,18 @@
-import {
-  Hbar,
-  HbarAllowance,
-  Key,
-  LedgerId,
-  LiveHash,
-  Timestamp,
-  TokenAllowance,
-  TokenNftAllowance,
-} from '@hashgraph/sdk';
-import StakingInfo from '@hashgraph/sdk/lib/StakingInfo';
-import TokenRelationshipMap from '@hashgraph/sdk/lib/account/TokenRelationshipMap';
-import { Long } from '@hashgraph/sdk/lib/long';
+import { Timestamp } from '@hashgraph/sdk';
+import { AccountBalance } from '../services/hedera';
 
 export type Account = {
   metamaskAddress: string; // This is not being used currently
   hederaAccountId: string;
   hederaEvmAddress: string;
+  balance: AccountBalance;
   network: string;
 };
 
 export type AccountInfo = {
   alias?: string;
   createdTime?: Timestamp;
-  evmAddress?: string;
   memo?: string;
+  balance?: AccountBalance;
   extraData?: object;
 };

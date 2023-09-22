@@ -114,4 +114,24 @@ export const getAccountInfo = async (
   });
 };
 
+/**
+ * Invoke the "getAccountBalance" method from the snap.
+ */
+
+export const getAccountBalance = async (
+  network: string,
+  externalAccountparams?: ExternalAccountParams,
+) => {
+  return await window.ethereum.request({
+    method: 'wallet_invokeSnap',
+    params: {
+      snapId: defaultSnapOrigin,
+      request: {
+        method: 'getAccountBalance',
+        params: { network },
+      },
+    },
+  });
+};
+
 export const isLocalSnap = (snapId: string) => snapId.startsWith('local:');

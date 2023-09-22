@@ -1,3 +1,4 @@
+import { createHederaClient } from '../../snap/account';
 import { updateSnapState } from '../../snap/state';
 import { AccountInfo } from '../../types/account';
 import { PulseSnapParams } from '../../types/state';
@@ -11,17 +12,28 @@ import { PulseSnapParams } from '../../types/state';
 export async function getAccountInfo(
   pulseSnapParams: PulseSnapParams,
 ): Promise<AccountInfo> {
-  const { state, hederaClient } = pulseSnapParams;
+  const { state } = pulseSnapParams;
 
-  const response = await hederaClient.getAccountInfo(
-    state.currentAccount.hederaAccountId,
-  );
-  // Let's massage the info we want rather than spitting out everything
-  state.accountState[
-    state.currentAccount.metamaskAddress
-  ].accountInfo.extraData = JSON.parse(JSON.stringify(response));
+  const { metamaskAddress, hederaAccountId, network } = state.currentAccount;
 
-  await updateSnapState(snap, state);
+  try {
+    const hederaClient = await createHederaClient(
+      state.accountState[metamaskAddress].keyStore.privateKey,
+      hederaAccountId,
+      network,
+    );
 
-  return state.accountState[state.currentAccount.metamaskAddress].accountInfo;
+    const response = await hederaClient.getAccountInfo(hederaAccountId);
+    // Let's massage the info we want rather than spitting out everything
+    state.accountState[metamaskAddress].accountInfo.extraData = JSON.parse(
+      JSON.stringify(response),
+    );
+    await updateSnapState(snap, state);
+    // TODO: still need to update  state.accountState[metamaskAddress].accountInfo.balance
+  } catch (error: any) {
+    console.error(`Error while trying to get account info: ${String(error)}`);
+    throw new Error(`Error while trying to get account info: ${String(error)}`);
+  }
+
+  return state.accountState[metamaskAddress].accountInfo;
 }

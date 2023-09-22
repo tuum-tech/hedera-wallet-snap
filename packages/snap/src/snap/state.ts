@@ -1,5 +1,6 @@
 import { SnapsGlobalObject } from '@metamask/snaps-types';
 
+import _ from 'lodash';
 import { Account } from '../types/account';
 import { PulseSnapState } from '../types/state';
 import { getEmptyAccountState, getInitialSnapState } from '../utils/config';
@@ -39,7 +40,7 @@ export async function getSnapState(
     params: { operation: 'get' },
   })) as PulseSnapState | null;
 
-  if (!state) {
+  if (state === null || _.isEmpty(state)) {
     throw Error('PulseSnapState is not initialized!');
   }
 
@@ -94,4 +95,25 @@ export async function initAccountState(
   state.currentAccount = { metamaskAddress: evmAddress } as Account;
   state.accountState[evmAddress] = getEmptyAccountState();
   await updateSnapState(snap, state);
+}
+
+/**
+ * Check if Hedera account was imported.
+ *
+ * @param state - PulseSnapState.
+ * @param evmAddress - Ethereum address.
+ * @returns Result.
+ */
+export async function getHederaAccountIdIfExists(
+  state: PulseSnapState,
+  evmAddress: string,
+): Promise<string> {
+  let result = '';
+  for (const address of Object.keys(state.accountState)) {
+    const { keyStore, accountId } = state.accountState[address];
+    if (keyStore.address === evmAddress) {
+      result = accountId;
+    }
+  }
+  return result;
 }
