@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js';
 import { createHederaClient } from '../../snap/account';
 import { updateSnapState } from '../../snap/state';
 import { PulseSnapParams } from '../../types/state';
@@ -11,7 +10,7 @@ import { PulseSnapParams } from '../../types/state';
  */
 export async function getAccountBalance(
   pulseSnapParams: PulseSnapParams,
-): Promise<BigNumber> {
+): Promise<number> {
   const { state } = pulseSnapParams;
 
   const { metamaskAddress, hederaAccountId, network } = state.currentAccount;
@@ -37,5 +36,5 @@ export async function getAccountBalance(
   }
 
   return state.accountState[metamaskAddress].accountInfo.balance
-    ?.hbars as BigNumber;
+    ?.hbars as number;
 }

@@ -1,5 +1,4 @@
-import { TransactionReceipt } from '@hashgraph/sdk';
-import { AccountBalance } from '../../services/hedera';
+import { AccountBalance, TxRecord } from '../../services/hedera';
 import { createHederaClient } from '../../snap/account';
 import { TransferCryptoRequestParams } from '../../types/params';
 import { PulseSnapParams } from '../../types/state';
@@ -14,14 +13,14 @@ import { PulseSnapParams } from '../../types/state';
 export async function sendHbarToAccountId(
   pulseSnapParams: PulseSnapParams,
   transferCryptoParams: TransferCryptoRequestParams,
-): Promise<TransactionReceipt> {
+): Promise<TxRecord> {
   const { state } = pulseSnapParams;
 
   const { transfers, memo = null, maxFee = null } = transferCryptoParams;
 
   const { metamaskAddress, hederaAccountId, network } = state.currentAccount;
 
-  let receipt = {} as TransactionReceipt;
+  let record = {} as TxRecord;
   try {
     let currentBalance =
       state.accountState[metamaskAddress].accountInfo.balance;
@@ -35,7 +34,7 @@ export async function sendHbarToAccountId(
       network,
     );
 
-    receipt = await hederaClient.transferCrypto({
+    record = await hederaClient.transferCrypto({
       currentBalance,
       transfers,
       memo,
@@ -46,5 +45,7 @@ export async function sendHbarToAccountId(
     throw new Error(`Error while trying to transfer crypto: ${String(error)}`);
   }
 
-  return receipt;
+  console.log('record: ', JSON.stringify(record, null, 4));
+
+  return record;
 }

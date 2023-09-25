@@ -4,10 +4,10 @@ import {
   MetamaskActions,
 } from '../../contexts/MetamaskContext';
 import useModal from '../../hooks/useModal';
-import { Account } from '../../types/snap';
+import { Account, SimpleTransfer } from '../../types/snap';
 import {
-  getAccountInfo,
   getCurrentMetamaskAccount,
+  sendHbarToAccountId,
   shouldDisplayReconnectButton,
 } from '../../utils';
 import { hederaNetworks } from '../../utils/hedera';
@@ -22,7 +22,7 @@ type Props = {
   setAccountInfo: React.Dispatch<React.SetStateAction<Account>>;
 };
 
-const GetAccountInfo: FC<Props> = ({
+const SendHbarToAccountId: FC<Props> = ({
   setCurrentNetwork,
   setMetamaskAddress,
   setAccountInfo,
@@ -33,7 +33,7 @@ const GetAccountInfo: FC<Props> = ({
 
   const externalAccountRef = useRef<GetExternalAccountRef>(null);
 
-  const handleGetAccountInfoClick = async () => {
+  const handleSendHbarToAccountIdClick = async () => {
     setLoading(true);
     try {
       const network = hederaNetworks.get('testnet') as string;
@@ -44,21 +44,35 @@ const GetAccountInfo: FC<Props> = ({
       const externalAccountParams =
         externalAccountRef.current?.handleGetAccountParams();
 
-      const response: any = await getAccountInfo(
+      // 1 ℏ
+      const transfers: SimpleTransfer[] = [
+        {
+          asset: 'HBAR',
+          to: '0.0.633893',
+          amount: 0.01,
+        } as SimpleTransfer,
+      ];
+      const memo = '';
+      // const maxFee: BigNumber = new BigNumber(1); // Note that this value is in tinybars and if you don't pass it, default is 1 HBAR
+
+      const response: any = await sendHbarToAccountId(
         network,
+        transfers,
+        memo,
+        undefined,
         externalAccountParams,
       );
 
-      const { accountInfo, currentAccount } = response;
+      const { currentAccount, record } = response;
       setAccountInfo(currentAccount);
-      console.log('accountInfo: ', JSON.stringify(accountInfo, null, 4));
+      console.log('Record: ', JSON.stringify(record, null, 4));
       showModal({
-        title: 'Your account info',
-        content: JSON.stringify(accountInfo),
+        title: 'Your transaction record',
+        content: JSON.stringify(record),
       });
-    } catch (e) {
-      console.error(e);
-      dispatch({ type: MetamaskActions.SetError, payload: e });
+    } catch (error: any) {
+      console.error(error);
+      dispatch({ type: MetamaskActions.SetError, payload: error });
     }
     setLoading(false);
   };
@@ -66,13 +80,13 @@ const GetAccountInfo: FC<Props> = ({
   return (
     <Card
       content={{
-        title: 'getAccountInfo',
-        description: 'Get the current account information',
+        title: 'sendHbarToAccountId',
+        description: 'Send HBAR to Account ID',
         form: <ExternalAccount ref={externalAccountRef} />,
         button: (
           <SendHelloButton
-            buttonText="Get Account Info"
-            onClick={handleGetAccountInfoClick}
+            buttonText="Send HBAR"
+            onClick={handleSendHbarToAccountIdClick}
             disabled={!state.installedSnap}
             loading={loading}
           />
@@ -88,4 +102,4 @@ const GetAccountInfo: FC<Props> = ({
   );
 };
 
-export { GetAccountInfo };
+export { SendHbarToAccountId };

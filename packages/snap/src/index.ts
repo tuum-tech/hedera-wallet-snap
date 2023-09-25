@@ -7,7 +7,6 @@ import { getAccountInfo } from './rpc/account/getAccountInfo';
 import { sendHbarToAccountId } from './rpc/account/sendHbarToAccountId';
 import { setCurrentAccount } from './snap/account';
 import { getSnapStateUnchecked } from './snap/state';
-import { TransferCryptoRequestParams } from './types/params';
 import { PulseSnapParams } from './types/state';
 import { init } from './utils/init';
 import { isValidTransferCryptoParams } from './utils/params';
@@ -91,10 +90,7 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
       isValidTransferCryptoParams(request.params);
       return {
         currentAccount: state.currentAccount,
-        result: await sendHbarToAccountId(
-          pulseSnapParams,
-          request.params as TransferCryptoRequestParams,
-        ),
+        record: await sendHbarToAccountId(pulseSnapParams, request.params),
       };
     }
     default:

@@ -1,5 +1,6 @@
 import type {
   AccountId,
+  CustomFee,
   Hbar,
   HbarAllowance,
   Key,
@@ -10,7 +11,6 @@ import type {
   Timestamp,
   TokenAllowance,
   TokenNftAllowance,
-  TransactionReceipt,
 } from '@hashgraph/sdk';
 import TokenRelationshipMap from '@hashgraph/sdk/lib/account/TokenRelationshipMap';
 import Duration from '@hashgraph/sdk/lib/Duration';
@@ -20,23 +20,58 @@ import { BigNumber } from 'bignumber.js';
 
 import { Wallet } from '../domain/wallet/abstract';
 
-export interface SimpleTransfer {
+export type SimpleTransfer = {
   // HBAR or Token ID (as string)
   asset?: string;
-  to?: AccountId;
+  to?: string;
   // amount must be in low denom
-  amount?: BigNumber.Instance;
-}
+  amount?: number;
+};
 
 export type Token = {
   token_id: string;
-  balance: BigNumber;
+  balance: number;
 };
 
 export type AccountBalance = {
   // balance here in hbars
-  hbars: BigNumber;
-  tokens: Map<string, BigNumber>;
+  hbars: number;
+  tokens: Map<string, TokenBalance>; // Map of TOKEN -> decimals
+};
+
+export type TokenBalance = {
+  // balance has already had decimals applied
+  balance: number;
+  decimals: number;
+};
+
+export type TxTransfer = {
+  accountId: string;
+  amount: string;
+  isApproved: boolean;
+};
+
+export type TxRecord = {
+  transactionHash: string;
+  consensusTimestamp: string;
+  transactionId: string;
+  transactionMemo: string;
+  transactionFee: string;
+  transfers: TxTransfer[];
+  contractFunctionResult: object | null;
+  tokenTransfers: object;
+  tokenTransfersList: object;
+  scheduleRef: string;
+  assessedCustomFees: object;
+  nftTransfers: object;
+  automaticTokenAssociations: object;
+  parentConsensusTimestamp: string;
+  aliasKey: string;
+  ethereumHash: string;
+  paidStakingRewards: TxTransfer[];
+  prngBytes: string;
+  prngNumber: string | null;
+  evmAddress: string;
 };
 
 export type HederaService = {
@@ -55,6 +90,8 @@ export type HederaService = {
   getMirrorAccountInfo(
     idOrAliasOrEvmAddress: string,
   ): Promise<MirrorAccountInfo>;
+
+  getTokenById(tokenId: string): Promise<MirrorTokenInfo>;
 };
 
 export type SimpleHederaClient = {
@@ -70,15 +107,15 @@ export type SimpleHederaClient = {
   getAccountInfo(accountId: string): Promise<HederaAccountInfo>;
 
   // returns the account balance in HBARs
-  getAccountBalance(): Promise<BigNumber>;
+  getAccountBalance(): Promise<number>;
 
   transferCrypto(options: {
     currentBalance: AccountBalance;
     transfers: SimpleTransfer[];
     memo: string | null;
-    maxFee: BigNumber | null; // tinybars
+    maxFee: number | null; // tinybars
     onBeforeConfirm?: () => void;
-  }): Promise<TransactionReceipt>;
+  }): Promise<TxRecord>;
 };
 
 export type NetworkNodeStakingInfo = {
@@ -103,7 +140,7 @@ export type MirrorAccountInfo = {
   alias: string;
   auto_renew_period: Long;
   balance: {
-    balance: BigNumber;
+    balance: number;
     timestamp: Timestamp;
     tokens: [];
   };
@@ -125,6 +162,33 @@ export type MirrorAccountInfo = {
   staked_node_id?: number;
   stake_period_start?: number;
   transactions: [];
+};
+
+export type MirrorTokenInfo = {
+  admin_key: Key;
+  auto_renew_account: string;
+  auto_renew_period: number;
+  created_timestamp: Timestamp;
+  custom_fees: CustomFee;
+  decimals: string;
+  deleted: boolean;
+  expiry_timestamp: BigNumber;
+  fee_schedule_key: Key;
+  freeze_default: boolean;
+  initial_supply: string;
+  max_supply: string;
+  memo: string;
+  modified_timestamp: Timestamp;
+  name: string;
+  pause_key: Key;
+  pause_status: string;
+  supply_key: Key;
+  supply_type: string;
+  symbol: string;
+  token_id: string;
+  total_supply: string;
+  type: string;
+  wipe_key: Key;
 };
 
 export type HederaAccountInfo = {

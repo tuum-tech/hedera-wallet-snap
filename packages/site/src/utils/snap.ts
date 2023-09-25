@@ -1,6 +1,8 @@
 import { MetaMaskInpageProvider } from '@metamask/providers';
+import BigNumber from 'bignumber.js';
 import { defaultSnapOrigin } from '../config';
 import { ExternalAccountParams, GetSnapsResponse, Snap } from '../types';
+import { SimpleTransfer } from '../types/snap';
 
 export const getCurrentMetamaskAccount = async (): Promise<string> => {
   const accounts = (await window.ethereum.request({
@@ -108,7 +110,7 @@ export const getAccountInfo = async (
       snapId: defaultSnapOrigin,
       request: {
         method: 'getAccountInfo',
-        params: { network },
+        params: { network, ...externalAccountparams },
       },
     },
   });
@@ -128,7 +130,30 @@ export const getAccountBalance = async (
       snapId: defaultSnapOrigin,
       request: {
         method: 'getAccountBalance',
-        params: { network },
+        params: { network, ...externalAccountparams },
+      },
+    },
+  });
+};
+
+/**
+ * Invoke the "sendHbarToAccountId" method from the snap.
+ */
+
+export const sendHbarToAccountId = async (
+  network: string,
+  transfers: SimpleTransfer[],
+  memo?: string,
+  maxFee?: BigNumber,
+  externalAccountparams?: ExternalAccountParams,
+) => {
+  return await window.ethereum.request({
+    method: 'wallet_invokeSnap',
+    params: {
+      snapId: defaultSnapOrigin,
+      request: {
+        method: 'sendHbarToAccountId',
+        params: { network, transfers, memo, maxFee, ...externalAccountparams },
       },
     },
   });

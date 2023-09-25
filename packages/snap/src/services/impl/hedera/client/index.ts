@@ -1,17 +1,16 @@
 import {
-  TransactionReceipt,
   type AccountId,
   type Client,
   type PrivateKey,
   type PublicKey,
 } from '@hashgraph/sdk';
 
-import BigNumber from 'bignumber.js';
 import {
   AccountBalance,
   HederaAccountInfo,
   SimpleHederaClient,
   SimpleTransfer,
+  TxRecord,
 } from '../../../hedera';
 import { getAccountBalance } from './getAccountBalance';
 import { getAccountInfo } from './getAccountInfo';
@@ -47,7 +46,7 @@ export class SimpleHederaClientImpl implements SimpleHederaClient {
     return getAccountInfo(this._client, accountId);
   }
 
-  async getAccountBalance(): Promise<BigNumber> {
+  async getAccountBalance(): Promise<number> {
     return getAccountBalance(this._client);
   }
 
@@ -55,9 +54,9 @@ export class SimpleHederaClientImpl implements SimpleHederaClient {
     currentBalance: AccountBalance;
     transfers: SimpleTransfer[];
     memo: string | null;
-    maxFee: BigNumber | null;
+    maxFee: number | null;
     onBeforeConfirm?: () => void;
-  }): Promise<TransactionReceipt> {
+  }): Promise<TxRecord> {
     return transferCrypto(this._client, options);
   }
 }

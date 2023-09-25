@@ -1,13 +1,14 @@
 import { SnapsGlobalObject } from '@metamask/snaps-types';
 
 import { divider, heading, text } from '@metamask/snaps-ui';
-import BigNumber from 'bignumber.js';
 import _ from 'lodash';
 import {
   AccountBalance,
   MirrorAccountInfo,
+  MirrorTokenInfo,
   SimpleHederaClient,
   Token,
+  TokenBalance,
 } from '../services/hedera';
 import { HederaServiceImpl, getHederaClient } from '../services/impl/hedera';
 import { Account } from '../types/account';
@@ -134,11 +135,24 @@ export async function importMetaMaskAccount(
       state.accountState[metamaskAddress].accountId = hederaAccountId;
 
       const accountBalance = accountInfo.balance;
-      const hbars = accountBalance.balance;
-      const tokens = new Map<string, BigNumber>();
-      accountBalance.tokens.forEach((token: Token) => {
-        tokens.set(token.token_id, token.balance);
+      const hbars = accountBalance.balance / 100000000;
+      const tokens = new Map<string, TokenBalance>();
+
+      // Use map to create an array of promises
+      const tokenPromises = accountBalance.tokens.map(async (token: Token) => {
+        const tokenId = token.token_id;
+        const tokenInfo: MirrorTokenInfo = await hederaService.getTokenById(
+          tokenId,
+        );
+        tokens.set(tokenId, {
+          balance: token.balance,
+          decimals: Number(tokenInfo.decimals),
+        } as TokenBalance);
       });
+
+      // Wait for all promises to resolve
+      await Promise.all(tokenPromises);
+
       balance = { hbars, tokens } as AccountBalance;
 
       // eslint-disable-next-line require-atomic-updates

@@ -1,10 +1,10 @@
-import BigNumber from 'bignumber.js';
 import { useContext, useEffect, useState } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 import { Card, InstallFlaskButton } from '../components/base';
 import { ConnectPulseSnap } from '../components/cards/ConnectPulseSnap';
 import { GetAccountInfo } from '../components/cards/GetAccountInfo';
 import { ReconnectPulseSnap } from '../components/cards/ReconnectPulseSnap';
+import { SendHbarToAccountId } from '../components/cards/SendHbarToAccountId';
 import { SendHelloHessage } from '../components/cards/SendHelloMessage';
 import { Todo } from '../components/cards/Todo';
 import {
@@ -69,9 +69,7 @@ const Index = () => {
             <dt>Balance: </dt>
             <dd>
               {accountInfo?.balance?.hbars
-                ? `${new BigNumber(accountInfo?.balance?.hbars)
-                    .dividedBy(1e8)
-                    .toString()} Hbar`
+                ? `${accountInfo?.balance?.hbars.toString()} Hbar`
                 : ''}
             </dd>
           </Col>
@@ -104,6 +102,12 @@ const Index = () => {
         />
 
         <GetAccountInfo
+          setCurrentNetwork={setCurrentNetwork}
+          setMetamaskAddress={setMetamaskAddress}
+          setAccountInfo={setAccountInfo}
+        />
+
+        <SendHbarToAccountId
           setCurrentNetwork={setCurrentNetwork}
           setMetamaskAddress={setMetamaskAddress}
           setAccountInfo={setAccountInfo}

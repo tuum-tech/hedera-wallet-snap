@@ -24,6 +24,12 @@ export async function getAccountInfo(
     );
 
     const response = await hederaClient.getAccountInfo(hederaAccountId);
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    state.accountState[metamaskAddress].accountInfo.balance!.hbars = Number(
+      response.balance.toString().replace(' ℏ', ''),
+    );
+
     // Let's massage the info we want rather than spitting out everything
     state.accountState[metamaskAddress].accountInfo.extraData = JSON.parse(
       JSON.stringify(response),

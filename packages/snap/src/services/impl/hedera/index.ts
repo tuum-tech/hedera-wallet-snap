@@ -16,6 +16,7 @@ import { FetchResponse, fetchDataFromUrl } from '../../../utils/fetch';
 import {
   HederaService,
   MirrorAccountInfo,
+  MirrorTokenInfo,
   NetworkNodeStakingInfo,
   SimpleHederaClient,
 } from '../../hedera';
@@ -48,7 +49,18 @@ export class HederaServiceImpl implements HederaService {
     keyIndex: number;
     accountId: AccountId;
   }): Promise<SimpleHederaClient | null> {
-    const client = Client.forNetwork(this.network as any);
+    let client;
+
+    if (this.network === 'testnet') {
+      // client = Client.forTestnet();
+      client = Client.forNetwork({
+        'https://testnet-node00-00-grpc.hedera.com:443': new AccountId(3),
+      });
+    } else if (this.network === 'previewnet') {
+      client = Client.forPreviewnet();
+    } else {
+      client = Client.forMainnet();
+    }
 
     // NOTE: important, ensure that we pre-compute the health state of all nodes
     await client.pingAll();
@@ -131,6 +143,16 @@ export class HederaServiceImpl implements HederaService {
   ): Promise<MirrorAccountInfo> {
     let result = {} as MirrorAccountInfo;
     const url = `https://${this.urlBase}.mirrornode.hedera.com/api/v1/accounts/${idOrAliasOrEvmAddress}`;
+    const response: FetchResponse = await fetchDataFromUrl(url);
+    if (response.success) {
+      result = response.data;
+    }
+    return result;
+  }
+
+  async getTokenById(tokenId: string): Promise<MirrorTokenInfo> {
+    let result = {} as MirrorTokenInfo;
+    const url = `https://${this.urlBase}.mirrornode.hedera.com/api/v1/tokens/${tokenId}`;
     const response: FetchResponse = await fetchDataFromUrl(url);
     if (response.success) {
       result = response.data;

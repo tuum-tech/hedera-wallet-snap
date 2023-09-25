@@ -1,5 +1,3 @@
-import BigNumber from 'bignumber.js';
-
 export type GetSnapsResponse = Record<string, Snap>;
 
 export type Snap = {
@@ -19,8 +17,28 @@ export type Account = {
 
 export type AccountBalance = {
   // balance here in hbars
-  hbars: BigNumber;
-  tokens: Map<string, BigNumber>;
+  hbars: number;
+  tokens: Map<string, TokenBalance>; // Map of TOKEN -> decimals
+};
+
+export type TokenBalance = {
+  // balance has already had decimals applied
+  balance: number;
+  decimals: number;
+};
+
+export type SimpleTransfer = {
+  // HBAR or Token ID (as string)
+  asset?: string;
+  to?: string;
+  // amount must be in low denom
+  amount?: number;
+};
+
+export type TransferCryptoRequestParams = {
+  transfers: SimpleTransfer[];
+  memo?: string;
+  maxFee?: number; // tinybars
 };
 
 export type ExternalAccountParams = {

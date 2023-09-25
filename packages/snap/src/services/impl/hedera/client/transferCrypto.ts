@@ -1,12 +1,17 @@
 import {
   Hbar,
+  TransactionRecord,
   TransferTransaction,
   type Client,
-  type TransactionReceipt,
 } from '@hashgraph/sdk';
-import { BigNumber } from 'bignumber.js';
 
-import { AccountBalance, SimpleTransfer } from '../../../hedera';
+import {
+  AccountBalance,
+  SimpleTransfer,
+  TokenBalance,
+  TxRecord,
+  TxTransfer,
+} from '../../../hedera';
 
 /**
  * Transfer crypto(hbar or other tokens).
@@ -25,10 +30,10 @@ export async function transferCrypto(
     currentBalance: AccountBalance;
     transfers: SimpleTransfer[];
     memo: string | null;
-    maxFee: BigNumber | null; // tinybars
+    maxFee: number | null; // tinybars
     onBeforeConfirm?: () => void;
   },
-): Promise<TransactionReceipt> {
+): Promise<TxRecord> {
   const transaction = new TransferTransaction();
 
   let outgoingHbarAmount = 0;
@@ -37,34 +42,38 @@ export async function transferCrypto(
 
   for (const transfer of options.transfers) {
     if (transfer.asset === 'HBAR') {
-      transaction.addHbarTransfer(
-        transfer.to ?? '',
-        transfer.amount?.toNumber(),
-      );
-      outgoingHbarAmount += Number(
-        transfer.amount?.negated().toString().replace(' ℏ', ''),
-      );
+      transaction.addHbarTransfer(transfer.to ?? '', transfer.amount);
+      if (transfer.amount !== undefined) {
+        outgoingHbarAmount += -transfer.amount;
+      }
     } else {
-      const amount = transfer.amount?.multipliedBy(
-        Math.pow(
+      let amount: number | undefined;
+
+      if (transfer.amount !== undefined) {
+        const multiplier = Math.pow(
           10,
           (
             options.currentBalance.tokens.get(
               transfer.asset as string,
-            ) as BigNumber
-          ).toNumber(),
-        ),
-      );
+            ) as TokenBalance
+          )?.decimals,
+        );
+        amount = transfer.amount * multiplier;
+      }
+
       transaction.addTokenTransfer(
         transfer.asset ?? '',
         transfer.to ?? '',
-        amount?.toNumber(),
+        amount,
       );
+
+      const negatedAmount = amount === undefined ? undefined : -amount;
+
       transaction.addTokenTransfer(
         transfer.asset ?? '',
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         client.operatorAccountId!,
-        amount?.negated().toNumber(),
+        negatedAmount,
       );
     }
   }
@@ -77,9 +86,61 @@ export async function transferCrypto(
     );
   }
 
-  const resp = await transaction.execute(client);
+  const txResponse = await transaction.execute(client);
 
-  options.onBeforeConfirm?.();
+  const record: TransactionRecord = await txResponse.getVerboseRecord(client);
 
-  return await resp.getReceipt(client);
+  const uint8ArrayToHex = (data: Uint8Array | null | undefined) => {
+    if (!data) {
+      return '';
+    }
+    return data.reduce(
+      (str, byte) => str + byte.toString(16).padStart(2, '0'),
+      '',
+    );
+  };
+
+  const transfers: TxTransfer[] = record.transfers.map((transfer) => ({
+    accountId: transfer.accountId.toString(),
+    amount: transfer.amount.toString(),
+    isApproved: transfer.isApproved,
+  }));
+
+  const paidStakingRewards: TxTransfer[] = record.paidStakingRewards.map(
+    (reward) => ({
+      accountId: reward.accountId.toString(),
+      amount: reward.amount.toString(),
+      isApproved: reward.isApproved,
+    }),
+  );
+  return {
+    transactionHash: uint8ArrayToHex(record.transactionHash),
+    consensusTimestamp: record.consensusTimestamp.toDate().toISOString(),
+    transactionId: record.transactionId.toString(),
+    transactionMemo: record.transactionMemo.toString(),
+    transactionFee: record.transactionFee.toString(),
+    transfers,
+    contractFunctionResult: record.contractFunctionResult
+      ? JSON.parse(JSON.stringify(record.contractFunctionResult))
+      : null, // TODO
+    tokenTransfers: JSON.parse(JSON.stringify(record.tokenTransfers)), // TODO
+    tokenTransfersList: JSON.parse(JSON.stringify(record.tokenTransfersList)), // TODO
+    scheduleRef: record.scheduleRef
+      ? record.scheduleRef.toSolidityAddress()
+      : '',
+    assessedCustomFees: JSON.parse(JSON.stringify(record.assessedCustomFees)), // TODO
+    nftTransfers: JSON.parse(JSON.stringify(record.nftTransfers)), // TODO
+    automaticTokenAssociations: JSON.parse(
+      JSON.stringify(record.automaticTokenAssociations),
+    ), // TODO
+    parentConsensusTimestamp: record.parentConsensusTimestamp
+      ? record.parentConsensusTimestamp.toDate().toISOString()
+      : '',
+    aliasKey: record.aliasKey ? record.aliasKey.toStringRaw() : '',
+    ethereumHash: uint8ArrayToHex(record.ethereumHash),
+    paidStakingRewards,
+    prngBytes: uint8ArrayToHex(record.prngBytes),
+    prngNumber: record.prngNumber,
+    evmAddress: uint8ArrayToHex(record.evmAddress?.toBytes()),
+  } as TxRecord;
 }

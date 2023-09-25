@@ -4,6 +4,9 @@ module.exports = {
   overrides: [
     {
       files: ['**/*.{ts,tsx}'],
+      env: {
+        browser: true,
+      },
       rules: {
         'jsdoc/require-jsdoc': 0,
       },
