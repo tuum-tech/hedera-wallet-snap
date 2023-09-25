@@ -1,4 +1,8 @@
-import { AccountBalance, TxRecord } from '../../services/hedera';
+import {
+  AccountBalance,
+  SimpleTransfer,
+  TxRecord,
+} from '../../services/hedera';
 import { createHederaClient } from '../../snap/account';
 import { TransferCryptoRequestParams } from '../../types/params';
 import { PulseSnapParams } from '../../types/state';
@@ -10,13 +14,17 @@ import { PulseSnapParams } from '../../types/state';
  * @param transferCryptoParams - Parameters for transferring crypto.
  * @returns Account Info.
  */
-export async function sendHbarToAccountId(
+export async function transferCrypto(
   pulseSnapParams: PulseSnapParams,
   transferCryptoParams: TransferCryptoRequestParams,
 ): Promise<TxRecord> {
   const { state } = pulseSnapParams;
 
-  const { transfers, memo = null, maxFee = null } = transferCryptoParams;
+  const {
+    transfers = [] as SimpleTransfer[],
+    memo = null,
+    maxFee = null,
+  } = transferCryptoParams;
 
   const { metamaskAddress, hederaAccountId, network } = state.currentAccount;
 
@@ -44,8 +52,6 @@ export async function sendHbarToAccountId(
     console.error(`Error while trying to transfer crypto: ${String(error)}`);
     throw new Error(`Error while trying to transfer crypto: ${String(error)}`);
   }
-
-  console.log('record: ', JSON.stringify(record, null, 4));
 
   return record;
 }

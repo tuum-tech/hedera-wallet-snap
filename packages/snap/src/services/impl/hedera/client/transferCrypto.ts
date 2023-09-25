@@ -42,7 +42,7 @@ export async function transferCrypto(
 
   for (const transfer of options.transfers) {
     if (transfer.asset === 'HBAR') {
-      transaction.addHbarTransfer(transfer.to ?? '', transfer.amount);
+      transaction.addHbarTransfer(transfer.to, transfer.amount);
       if (transfer.amount !== undefined) {
         outgoingHbarAmount += -transfer.amount;
       }
@@ -52,25 +52,18 @@ export async function transferCrypto(
       if (transfer.amount !== undefined) {
         const multiplier = Math.pow(
           10,
-          (
-            options.currentBalance.tokens.get(
-              transfer.asset as string,
-            ) as TokenBalance
-          )?.decimals,
+          (options.currentBalance.tokens.get(transfer.asset) as TokenBalance)
+            ?.decimals,
         );
         amount = transfer.amount * multiplier;
       }
 
-      transaction.addTokenTransfer(
-        transfer.asset ?? '',
-        transfer.to ?? '',
-        amount,
-      );
+      transaction.addTokenTransfer(transfer.asset, transfer.to, amount);
 
       const negatedAmount = amount === undefined ? undefined : -amount;
 
       transaction.addTokenTransfer(
-        transfer.asset ?? '',
+        transfer.asset,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         client.operatorAccountId!,
         negatedAmount,
@@ -86,9 +79,13 @@ export async function transferCrypto(
     );
   }
 
+  transaction.freezeWith(client);
+
   const txResponse = await transaction.execute(client);
 
   const record: TransactionRecord = await txResponse.getVerboseRecord(client);
+
+  console.log('record: ', JSON.stringify(record, null, 4));
 
   const uint8ArrayToHex = (data: Uint8Array | null | undefined) => {
     if (!data) {

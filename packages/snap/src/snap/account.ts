@@ -158,7 +158,7 @@ export async function importMetaMaskAccount(
       // eslint-disable-next-line require-atomic-updates
       state.accountState[metamaskAddress].accountInfo = {
         alias: accountInfo.alias,
-        createdTime: accountInfo.created_timestamp,
+        createdTime: accountInfo.created_timestamp.toDate().toISOString(),
         memo: accountInfo.memo,
         balance,
         // TODO: Run a cronjob occasionally that runs getAccountInfo and getBalance

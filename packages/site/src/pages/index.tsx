@@ -4,9 +4,9 @@ import { Card, InstallFlaskButton } from '../components/base';
 import { ConnectPulseSnap } from '../components/cards/ConnectPulseSnap';
 import { GetAccountInfo } from '../components/cards/GetAccountInfo';
 import { ReconnectPulseSnap } from '../components/cards/ReconnectPulseSnap';
-import { SendHbarToAccountId } from '../components/cards/SendHbarToAccountId';
 import { SendHelloHessage } from '../components/cards/SendHelloMessage';
 import { Todo } from '../components/cards/Todo';
+import { TransferCrypto } from '../components/cards/TransferCrypto';
 import {
   CardContainer,
   ErrorMessage,
@@ -107,7 +107,7 @@ const Index = () => {
           setAccountInfo={setAccountInfo}
         />
 
-        <SendHbarToAccountId
+        <TransferCrypto
           setCurrentNetwork={setCurrentNetwork}
           setMetamaskAddress={setMetamaskAddress}
           setAccountInfo={setAccountInfo}

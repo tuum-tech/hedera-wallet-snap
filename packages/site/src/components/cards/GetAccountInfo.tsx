@@ -12,9 +12,7 @@ import {
 } from '../../utils';
 import { hederaNetworks } from '../../utils/hedera';
 import { Card, SendHelloButton } from '../base';
-import ExternalAccount, {
-  GetExternalAccountRef,
-} from '../sections/ExternalAccount';
+import { GetExternalAccountRef } from '../sections/ExternalAccount';
 
 type Props = {
   setCurrentNetwork: React.Dispatch<React.SetStateAction<string>>;
@@ -30,6 +28,7 @@ const GetAccountInfo: FC<Props> = ({
   const [state, dispatch] = useContext(MetaMaskContext);
   const [loading, setLoading] = useState(false);
   const { showModal } = useModal();
+  const [accountId, setAccountId] = useState('');
 
   const externalAccountRef = useRef<GetExternalAccountRef>(null);
 
@@ -46,6 +45,7 @@ const GetAccountInfo: FC<Props> = ({
 
       const response: any = await getAccountInfo(
         network,
+        accountId,
         externalAccountParams,
       );
 
@@ -68,7 +68,21 @@ const GetAccountInfo: FC<Props> = ({
       content={{
         title: 'getAccountInfo',
         description: 'Get the current account information',
-        form: <ExternalAccount ref={externalAccountRef} />,
+        form: (
+          <>
+            {/* <ExternalAccount ref={externalAccountRef} /> */}
+            <label>
+              Enter an account Id
+              <input
+                type="text"
+                style={{ width: '100%' }}
+                value={accountId}
+                placeholder="Account Id(can be empty)"
+                onChange={(e) => setAccountId(e.target.value)}
+              />
+            </label>
+          </>
+        ),
         button: (
           <SendHelloButton
             buttonText="Get Account Info"

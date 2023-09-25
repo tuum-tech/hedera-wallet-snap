@@ -1,4 +1,3 @@
-import { Timestamp } from '@hashgraph/sdk';
 import { AccountBalance } from '../services/hedera';
 
 export type Account = {
@@ -11,7 +10,7 @@ export type Account = {
 
 export type AccountInfo = {
   alias?: string;
-  createdTime?: Timestamp;
+  createdTime?: string;
   memo?: string;
   balance?: AccountBalance;
   extraData?: object;

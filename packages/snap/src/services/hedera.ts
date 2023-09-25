@@ -22,10 +22,10 @@ import { Wallet } from '../domain/wallet/abstract';
 
 export type SimpleTransfer = {
   // HBAR or Token ID (as string)
-  asset?: string;
-  to?: string;
+  asset: string;
+  to: string;
   // amount must be in low denom
-  amount?: number;
+  amount: number;
 };
 
 export type Token = {

@@ -102,6 +102,7 @@ export const sendHello = async (network: string) => {
 
 export const getAccountInfo = async (
   network: string,
+  accountId?: string,
   externalAccountparams?: ExternalAccountParams,
 ) => {
   return await window.ethereum.request({
@@ -110,7 +111,7 @@ export const getAccountInfo = async (
       snapId: defaultSnapOrigin,
       request: {
         method: 'getAccountInfo',
-        params: { network, ...externalAccountparams },
+        params: { network, accountId, ...externalAccountparams },
       },
     },
   });
@@ -137,10 +138,10 @@ export const getAccountBalance = async (
 };
 
 /**
- * Invoke the "sendHbarToAccountId" method from the snap.
+ * Invoke the "transferCrypto" method from the snap.
  */
 
-export const sendHbarToAccountId = async (
+export const transferCrypto = async (
   network: string,
   transfers: SimpleTransfer[],
   memo?: string,
@@ -152,7 +153,7 @@ export const sendHbarToAccountId = async (
     params: {
       snapId: defaultSnapOrigin,
       request: {
-        method: 'sendHbarToAccountId',
+        method: 'transferCrypto',
         params: { network, transfers, memo, maxFee, ...externalAccountparams },
       },
     },

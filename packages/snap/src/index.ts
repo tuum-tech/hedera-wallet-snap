@@ -4,12 +4,15 @@ import { panel, text } from '@metamask/snaps-ui';
 import _ from 'lodash';
 import { getAccountBalance } from './rpc/account/getAccountBalance';
 import { getAccountInfo } from './rpc/account/getAccountInfo';
-import { sendHbarToAccountId } from './rpc/account/sendHbarToAccountId';
+import { transferCrypto } from './rpc/account/transferCrypto';
 import { setCurrentAccount } from './snap/account';
 import { getSnapStateUnchecked } from './snap/state';
 import { PulseSnapParams } from './types/state';
 import { init } from './utils/init';
-import { isValidTransferCryptoParams } from './utils/params';
+import {
+  isValidGetAccountInfoRequest,
+  isValidTransferCryptoParams,
+} from './utils/params';
 
 /**
  * Handle incoming JSON-RPC requests, sent through `wallet_invokeSnap`.
@@ -75,9 +78,13 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
         currentAccount: state.currentAccount,
       };
     case 'getAccountInfo': {
+      isValidGetAccountInfoRequest(request.params);
       return {
         currentAccount: state.currentAccount,
-        accountInfo: await getAccountInfo(pulseSnapParams),
+        accountInfo: await getAccountInfo(
+          pulseSnapParams,
+          request.params.accountId,
+        ),
       };
     }
     case 'getAccountBalance': {
@@ -86,11 +93,11 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
         accountBalance: await getAccountBalance(pulseSnapParams),
       };
     }
-    case 'sendHbarToAccountId': {
+    case 'transferCrypto': {
       isValidTransferCryptoParams(request.params);
       return {
         currentAccount: state.currentAccount,
-        record: await sendHbarToAccountId(pulseSnapParams, request.params),
+        record: await transferCrypto(pulseSnapParams, request.params),
       };
     }
     default:

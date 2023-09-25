@@ -7,14 +7,12 @@ import useModal from '../../hooks/useModal';
 import { Account, SimpleTransfer } from '../../types/snap';
 import {
   getCurrentMetamaskAccount,
-  sendHbarToAccountId,
   shouldDisplayReconnectButton,
+  transferCrypto,
 } from '../../utils';
 import { hederaNetworks } from '../../utils/hedera';
 import { Card, SendHelloButton } from '../base';
-import ExternalAccount, {
-  GetExternalAccountRef,
-} from '../sections/ExternalAccount';
+import { GetExternalAccountRef } from '../sections/ExternalAccount';
 
 type Props = {
   setCurrentNetwork: React.Dispatch<React.SetStateAction<string>>;
@@ -22,7 +20,7 @@ type Props = {
   setAccountInfo: React.Dispatch<React.SetStateAction<Account>>;
 };
 
-const SendHbarToAccountId: FC<Props> = ({
+const TransferCrypto: FC<Props> = ({
   setCurrentNetwork,
   setMetamaskAddress,
   setAccountInfo,
@@ -30,10 +28,11 @@ const SendHbarToAccountId: FC<Props> = ({
   const [state, dispatch] = useContext(MetaMaskContext);
   const [loading, setLoading] = useState(false);
   const { showModal } = useModal();
+  const [sendToAddress, setSendToAddress] = useState('');
 
   const externalAccountRef = useRef<GetExternalAccountRef>(null);
 
-  const handleSendHbarToAccountIdClick = async () => {
+  const handleTransferCryptoClick = async () => {
     setLoading(true);
     try {
       const network = hederaNetworks.get('testnet') as string;
@@ -45,17 +44,19 @@ const SendHbarToAccountId: FC<Props> = ({
         externalAccountRef.current?.handleGetAccountParams();
 
       // 1 ℏ
+      // 0.0.633893
+      // 0x7d871f006d97498ea338268a956af94ab2e65cdd
       const transfers: SimpleTransfer[] = [
         {
           asset: 'HBAR',
-          to: '0.0.633893',
+          to: sendToAddress,
           amount: 0.01,
         } as SimpleTransfer,
       ];
       const memo = '';
-      // const maxFee: BigNumber = new BigNumber(1); // Note that this value is in tinybars and if you don't pass it, default is 1 HBAR
+      // const maxFee = 1; // Note that this value is in tinybars and if you don't pass it, default is 1 HBAR
 
-      const response: any = await sendHbarToAccountId(
+      const response: any = await transferCrypto(
         network,
         transfers,
         memo,
@@ -80,13 +81,29 @@ const SendHbarToAccountId: FC<Props> = ({
   return (
     <Card
       content={{
-        title: 'sendHbarToAccountId',
-        description: 'Send HBAR to Account ID',
-        form: <ExternalAccount ref={externalAccountRef} />,
+        title: 'sendHbar',
+        description:
+          'Send HBAR to another account(can pass in Account Id or EVM address but not both)',
+        form: (
+          <>
+            {/* <ExternalAccount ref={externalAccountRef} /> */}
+            <label>
+              Enter an account Id or an EVM address
+              <input
+                type="text"
+                style={{ width: '100%' }}
+                value={sendToAddress}
+                placeholder="Account Id or EVM address"
+                onChange={(e) => setSendToAddress(e.target.value)}
+              />
+            </label>
+            <br />
+          </>
+        ),
         button: (
           <SendHelloButton
             buttonText="Send HBAR"
-            onClick={handleSendHbarToAccountIdClick}
+            onClick={handleTransferCryptoClick}
             disabled={!state.installedSnap}
             loading={loading}
           />
@@ -102,4 +119,4 @@ const SendHbarToAccountId: FC<Props> = ({
   );
 };
 
-export { SendHbarToAccountId };
+export { TransferCrypto };
