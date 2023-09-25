@@ -153,12 +153,25 @@ export async function importMetaMaskAccount(
       // Wait for all promises to resolve
       await Promise.all(tokenPromises);
 
-      balance = { hbars, tokens } as AccountBalance;
+      balance = {
+        hbars,
+        timestamp: new Date(
+          parseFloat(accountBalance.timestamp) * 1000,
+        ).toISOString(),
+        tokens,
+      } as AccountBalance;
 
+      console.log(
+        'created_timestamp: ',
+        accountInfo.created_timestamp,
+        typeof accountInfo.created_timestamp,
+      );
       // eslint-disable-next-line require-atomic-updates
       state.accountState[metamaskAddress].accountInfo = {
         alias: accountInfo.alias,
-        createdTime: accountInfo.created_timestamp.toDate().toISOString(),
+        createdTime: new Date(
+          parseFloat(accountInfo.created_timestamp) * 1000,
+        ).toISOString(),
         memo: accountInfo.memo,
         balance,
         // TODO: Run a cronjob occasionally that runs getAccountInfo and getBalance

@@ -9,8 +9,10 @@ import {
   AccountBalance,
   SimpleTransfer,
   TokenBalance,
+  TxReceipt,
+  TxReceiptExchangeRate,
   TxRecord,
-  TxTransfer,
+  TxRecordTransfer,
 } from '../../../hedera';
 
 /**
@@ -85,8 +87,6 @@ export async function transferCrypto(
 
   const record: TransactionRecord = await txResponse.getVerboseRecord(client);
 
-  console.log('record: ', JSON.stringify(record, null, 4));
-
   const uint8ArrayToHex = (data: Uint8Array | null | undefined) => {
     if (!data) {
       return '';
@@ -97,13 +97,13 @@ export async function transferCrypto(
     );
   };
 
-  const transfers: TxTransfer[] = record.transfers.map((transfer) => ({
+  const transfers: TxRecordTransfer[] = record.transfers.map((transfer) => ({
     accountId: transfer.accountId.toString(),
     amount: transfer.amount.toString(),
     isApproved: transfer.isApproved,
   }));
 
-  const paidStakingRewards: TxTransfer[] = record.paidStakingRewards.map(
+  const paidStakingRewards: TxRecordTransfer[] = record.paidStakingRewards.map(
     (reward) => ({
       accountId: reward.accountId.toString(),
       amount: reward.amount.toString(),
@@ -111,6 +111,35 @@ export async function transferCrypto(
     }),
   );
   return {
+    receipt: {
+      status: record.receipt.status.toString(),
+      accountId: record.receipt.accountId
+        ? record.receipt.accountId.toString()
+        : '',
+      fileId: record.receipt.fileId ? record.receipt.fileId : '',
+      contractId: record.receipt.contractId ? record.receipt.contractId : '',
+      topicId: record.receipt.topicId ? record.receipt.topicId : '',
+      tokenId: record.receipt.tokenId ? record.receipt.tokenId : '',
+      scheduleId: record.receipt.scheduleId ? record.receipt.scheduleId : '',
+      exchangeRate: record.receipt.exchangeRate
+        ? (JSON.parse(
+            JSON.stringify(record.receipt.exchangeRate),
+          ) as TxReceiptExchangeRate)
+        : ({} as TxReceiptExchangeRate),
+      topicSequenceNumber: record.receipt.topicSequenceNumber
+        ? String(record.receipt.topicSequenceNumber)
+        : '',
+      topicRunningHash: uint8ArrayToHex(record.receipt.topicRunningHash),
+      totalSupply: record.receipt.totalSupply
+        ? String(record.receipt.totalSupply)
+        : '',
+      scheduledTransactionId: record.receipt.scheduledTransactionId
+        ? record.receipt.scheduledTransactionId.toString()
+        : '',
+      serials: JSON.parse(JSON.stringify(record.receipt.serials)),
+      duplicates: JSON.parse(JSON.stringify(record.receipt.duplicates)),
+      children: JSON.parse(JSON.stringify(record.receipt.children)),
+    } as TxReceipt,
     transactionHash: uint8ArrayToHex(record.transactionHash),
     consensusTimestamp: record.consensusTimestamp.toDate().toISOString(),
     transactionId: record.transactionId.toString(),
@@ -134,10 +163,12 @@ export async function transferCrypto(
       ? record.parentConsensusTimestamp.toDate().toISOString()
       : '',
     aliasKey: record.aliasKey ? record.aliasKey.toStringRaw() : '',
+    duplicates: JSON.parse(JSON.stringify(record.duplicates)),
+    children: JSON.parse(JSON.stringify(record.children)),
     ethereumHash: uint8ArrayToHex(record.ethereumHash),
     paidStakingRewards,
     prngBytes: uint8ArrayToHex(record.prngBytes),
-    prngNumber: record.prngNumber,
+    prngNumber: record.prngNumber ? record.prngNumber.toString() : '',
     evmAddress: uint8ArrayToHex(record.evmAddress?.toBytes()),
   } as TxRecord;
 }

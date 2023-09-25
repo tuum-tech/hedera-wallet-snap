@@ -1,3 +1,4 @@
+import { AccountInfoJson } from '@hashgraph/sdk/lib/account/AccountInfo';
 import { AccountBalance } from '../services/hedera';
 
 export type Account = {
@@ -13,5 +14,5 @@ export type AccountInfo = {
   createdTime?: string;
   memo?: string;
   balance?: AccountBalance;
-  extraData?: object;
+  extraData?: AccountInfoJson;
 };

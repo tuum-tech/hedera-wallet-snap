@@ -16,8 +16,8 @@ import { FetchResponse, fetchDataFromUrl } from '../../../utils/fetch';
 import {
   HederaService,
   MirrorAccountInfo,
+  MirrorStakingInfo,
   MirrorTokenInfo,
-  NetworkNodeStakingInfo,
   SimpleHederaClient,
 } from '../../hedera';
 import { SimpleHederaClientImpl } from './client';
@@ -90,8 +90,8 @@ export class HederaServiceImpl implements HederaService {
     return new SimpleHederaClientImpl(client, privateKey);
   }
 
-  async getNodeStakingInfo(): Promise<NetworkNodeStakingInfo[]> {
-    const result: NetworkNodeStakingInfo[] = [];
+  async getNodeStakingInfo(): Promise<MirrorStakingInfo[]> {
+    const result: MirrorStakingInfo[] = [];
 
     const url = `https://${this.urlBase}.mirrornode.hedera.com/api/v1/network/nodes?order=asc&limit=25`;
     const response: FetchResponse = await fetchDataFromUrl(url);

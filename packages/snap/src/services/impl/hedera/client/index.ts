@@ -5,9 +5,9 @@ import {
   type PublicKey,
 } from '@hashgraph/sdk';
 
+import { AccountInfoJson } from '@hashgraph/sdk/lib/account/AccountInfo';
 import {
   AccountBalance,
-  HederaAccountInfo,
   SimpleHederaClient,
   SimpleTransfer,
   TxRecord,
@@ -42,7 +42,7 @@ export class SimpleHederaClientImpl implements SimpleHederaClient {
     return this._client.operatorAccountId!;
   }
 
-  async getAccountInfo(accountId: string): Promise<HederaAccountInfo> {
+  async getAccountInfo(accountId: string): Promise<AccountInfoJson> {
     return getAccountInfo(this._client, accountId);
   }
 

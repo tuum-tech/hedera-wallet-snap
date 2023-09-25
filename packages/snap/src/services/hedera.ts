@@ -1,23 +1,15 @@
 import type {
   AccountId,
   CustomFee,
-  Hbar,
-  HbarAllowance,
   Key,
-  LedgerId,
-  LiveHash,
   PrivateKey,
   PublicKey,
   Timestamp,
-  TokenAllowance,
-  TokenNftAllowance,
 } from '@hashgraph/sdk';
-import TokenRelationshipMap from '@hashgraph/sdk/lib/account/TokenRelationshipMap';
-import Duration from '@hashgraph/sdk/lib/Duration';
 import { Long } from '@hashgraph/sdk/lib/long';
-import StakingInfo from '@hashgraph/sdk/lib/StakingInfo';
 import { BigNumber } from 'bignumber.js';
 
+import { AccountInfoJson } from '@hashgraph/sdk/lib/account/AccountInfo';
 import { Wallet } from '../domain/wallet/abstract';
 
 export type SimpleTransfer = {
@@ -36,6 +28,7 @@ export type Token = {
 export type AccountBalance = {
   // balance here in hbars
   hbars: number;
+  timestamp: string;
   tokens: Map<string, TokenBalance>; // Map of TOKEN -> decimals
 };
 
@@ -45,19 +38,45 @@ export type TokenBalance = {
   decimals: number;
 };
 
-export type TxTransfer = {
+export type TxRecordTransfer = {
   accountId: string;
   amount: string;
   isApproved: boolean;
 };
 
+export type TxReceiptExchangeRate = {
+  hbars: number;
+  cents: number;
+  expirationTime: string;
+  exchangeRateInCents: number;
+};
+
+export type TxReceipt = {
+  status: string;
+  accountId: string;
+  fileId: string;
+  contractId: string;
+  topicId: string;
+  tokenId: string;
+  scheduleId: string;
+  exchangeRate: TxReceiptExchangeRate;
+  topicSequenceNumber: string;
+  topicRunningHash: string;
+  totalSupply: string;
+  scheduledTransactionId: string;
+  serials: object;
+  duplicates: object;
+  children: object;
+};
+
 export type TxRecord = {
+  receipt: object;
   transactionHash: string;
   consensusTimestamp: string;
   transactionId: string;
   transactionMemo: string;
   transactionFee: string;
-  transfers: TxTransfer[];
+  transfers: TxRecordTransfer[];
   contractFunctionResult: object | null;
   tokenTransfers: object;
   tokenTransfersList: object;
@@ -67,10 +86,12 @@ export type TxRecord = {
   automaticTokenAssociations: object;
   parentConsensusTimestamp: string;
   aliasKey: string;
+  duplicates: object;
+  children: object;
   ethereumHash: string;
-  paidStakingRewards: TxTransfer[];
+  paidStakingRewards: TxRecordTransfer[];
   prngBytes: string;
-  prngNumber: string | null;
+  prngNumber: string;
   evmAddress: string;
 };
 
@@ -85,7 +106,7 @@ export type HederaService = {
     accountId: AccountId;
   }): Promise<SimpleHederaClient | null>;
 
-  getNodeStakingInfo(): Promise<NetworkNodeStakingInfo[]>;
+  getNodeStakingInfo(): Promise<MirrorStakingInfo[]>;
 
   getMirrorAccountInfo(
     idOrAliasOrEvmAddress: string,
@@ -104,7 +125,7 @@ export type SimpleHederaClient = {
   // get the associated account ID
   getAccountId(): AccountId;
 
-  getAccountInfo(accountId: string): Promise<HederaAccountInfo>;
+  getAccountInfo(accountId: string): Promise<AccountInfoJson>;
 
   // returns the account balance in HBARs
   getAccountBalance(): Promise<number>;
@@ -118,7 +139,7 @@ export type SimpleHederaClient = {
   }): Promise<TxRecord>;
 };
 
-export type NetworkNodeStakingInfo = {
+export type MirrorStakingInfo = {
   description: string;
   node_id: number;
   node_account_id: string;
@@ -141,15 +162,15 @@ export type MirrorAccountInfo = {
   auto_renew_period: Long;
   balance: {
     balance: number;
-    timestamp: Timestamp;
+    timestamp: string;
     tokens: [];
   };
-  created_timestamp: Timestamp;
+  created_timestamp: string;
   decline_reward: boolean;
   deleted: boolean;
   ethereum_nonce: Long;
   evm_address: string;
-  expiry_timestamp: Timestamp;
+  expiry_timestamp: string;
   key: {
     _type: string;
     key: string;
@@ -162,6 +183,9 @@ export type MirrorAccountInfo = {
   staked_node_id?: number;
   stake_period_start?: number;
   transactions: [];
+  links: {
+    next: string;
+  };
 };
 
 export type MirrorTokenInfo = {
@@ -172,7 +196,7 @@ export type MirrorTokenInfo = {
   custom_fees: CustomFee;
   decimals: string;
   deleted: boolean;
-  expiry_timestamp: BigNumber;
+  expiry_timestamp: string;
   fee_schedule_key: Key;
   freeze_default: boolean;
   initial_supply: string;
@@ -189,31 +213,4 @@ export type MirrorTokenInfo = {
   total_supply: string;
   type: string;
   wipe_key: Key;
-};
-
-export type HederaAccountInfo = {
-  accountId: AccountId;
-  contractAccountId?: string;
-  isDeleted: boolean;
-  proxyAccountId?: object;
-  proxyReceived: Hbar;
-  key: Key;
-  balance: Hbar;
-  sendRecordThreshold: Hbar;
-  receiveRecordThreshold: Hbar;
-  isReceiverSignatureRequired: boolean;
-  expirationTime: Timestamp;
-  autoRenewPeriod: Duration;
-  liveHashes: LiveHash[];
-  tokenRelationships: TokenRelationshipMap;
-  accountMemo: string;
-  ownedNfts: Long;
-  maxAutomaticTokenAssociations: Long;
-  aliasKey: PublicKey;
-  ledgerId: LedgerId;
-  hbarAllowances: HbarAllowance[];
-  tokenAllowances: TokenAllowance[];
-  nftAllowances: TokenNftAllowance[];
-  ethereumNonce?: Long;
-  stakingInfo?: StakingInfo;
 };

@@ -25,6 +25,9 @@ export async function getAccountBalance(
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     state.accountState[metamaskAddress].accountInfo.balance!.hbars =
       await hederaClient.getAccountBalance();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    state.accountState[metamaskAddress].accountInfo.balance!.timestamp =
+      new Date().toISOString();
     await updateSnapState(snap, state);
   } catch (error: any) {
     console.error(

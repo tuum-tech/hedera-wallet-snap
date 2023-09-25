@@ -1,5 +1,5 @@
+import { AccountInfoJson } from '@hashgraph/sdk/lib/account/AccountInfo';
 import _ from 'lodash';
-import { HederaAccountInfo } from 'src/services/hedera';
 import { createHederaClient } from '../../snap/account';
 import { updateSnapState } from '../../snap/state';
 import { PulseSnapParams } from '../../types/state';
@@ -14,12 +14,12 @@ import { PulseSnapParams } from '../../types/state';
 export async function getAccountInfo(
   pulseSnapParams: PulseSnapParams,
   accountId?: string,
-): Promise<any> {
+): Promise<AccountInfoJson> {
   const { state } = pulseSnapParams;
 
   const { metamaskAddress, hederaAccountId, network } = state.currentAccount;
 
-  let accountInfo = {};
+  let accountInfo = {} as AccountInfoJson;
 
   try {
     const hederaClient = await createHederaClient(
@@ -28,23 +28,22 @@ export async function getAccountInfo(
       network,
     );
 
-    let response: HederaAccountInfo;
     if (accountId && !_.isEmpty(accountId)) {
-      response = await hederaClient.getAccountInfo(accountId);
+      accountInfo = await hederaClient.getAccountInfo(accountId);
     } else {
-      response = await hederaClient.getAccountInfo(hederaAccountId);
+      accountInfo = await hederaClient.getAccountInfo(hederaAccountId);
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       state.accountState[metamaskAddress].accountInfo.balance!.hbars = Number(
-        response.balance.toString().replace(' ℏ', ''),
+        accountInfo.balance.toString().replace(' ℏ', ''),
       );
 
-      // Let's massage the info we want rather than spitting out everything
-      state.accountState[metamaskAddress].accountInfo.extraData = JSON.parse(
-        JSON.stringify(response),
-      );
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      state.accountState[metamaskAddress].accountInfo.balance!.timestamp =
+        new Date().toISOString();
+
+      state.accountState[metamaskAddress].accountInfo.extraData = accountInfo;
       await updateSnapState(snap, state);
     }
-    accountInfo = JSON.parse(JSON.stringify(response));
   } catch (error: any) {
     console.error(`Error while trying to get account info: ${String(error)}`);
     throw new Error(`Error while trying to get account info: ${String(error)}`);
