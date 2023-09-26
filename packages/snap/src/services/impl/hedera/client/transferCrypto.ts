@@ -40,7 +40,7 @@ export async function transferCrypto(
 
   let outgoingHbarAmount = 0;
   transaction.setTransactionMemo(options.memo ?? '');
-  transaction.setMaxTransactionFee(options.maxFee ?? new Hbar(1));
+  transaction.setMaxTransactionFee(new Hbar(options.maxFee) ?? new Hbar(1));
 
   for (const transfer of options.transfers) {
     if (transfer.asset === 'HBAR') {

@@ -25,7 +25,7 @@ export async function init(
     ]),
   };
 
-  await snapDialog(snap, dialogParams);
+  await snapDialog(dialogParams);
   console.log('starting init');
   return await initSnapState(snap);
 }

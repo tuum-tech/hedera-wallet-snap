@@ -29,6 +29,8 @@ const TransferCrypto: FC<Props> = ({
   const [loading, setLoading] = useState(false);
   const { showModal } = useModal();
   const [sendToAddress, setSendToAddress] = useState('');
+  const [sendMemo, setSendMemo] = useState('');
+  const [sendAmount, setSendAmount] = useState(0);
 
   const externalAccountRef = useRef<GetExternalAccountRef>(null);
 
@@ -50,16 +52,15 @@ const TransferCrypto: FC<Props> = ({
         {
           asset: 'HBAR',
           to: sendToAddress,
-          amount: 0.01,
+          amount: sendAmount,
         } as SimpleTransfer,
       ];
-      const memo = '';
-      // const maxFee = 1; // Note that this value is in tinybars and if you don't pass it, default is 1 HBAR
+      // const maxFee = 1; // Note that if you don't pass this, default is 1 HBAR
 
       const response: any = await transferCrypto(
         network,
         transfers,
-        memo,
+        sendMemo,
         undefined,
         externalAccountParams,
       );
@@ -95,6 +96,28 @@ const TransferCrypto: FC<Props> = ({
                 value={sendToAddress}
                 placeholder="Account Id or EVM address"
                 onChange={(e) => setSendToAddress(e.target.value)}
+              />
+            </label>
+            <br />
+            <label>
+              Enter memo to include(needed for exchange addresses)
+              <input
+                type="text"
+                style={{ width: '100%' }}
+                value={sendMemo}
+                placeholder="Memo"
+                onChange={(e) => setSendMemo(e.target.value)}
+              />
+            </label>
+            <br />
+            <label>
+              Enter an amount of HBARs to send(in HBARs)
+              <input
+                type="text"
+                style={{ width: '100%' }}
+                value={sendAmount}
+                placeholder="0.01"
+                onChange={(e) => setSendAmount(parseFloat(e.target.value))}
               />
             </label>
             <br />

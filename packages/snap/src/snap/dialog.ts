@@ -1,4 +1,3 @@
-import { SnapsGlobalObject } from '@metamask/snaps-types';
 import { divider, heading, panel, Panel, text } from '@metamask/snaps-ui';
 
 import { PulseSnapState, SnapDialogParams } from '../types/state';
@@ -7,13 +6,9 @@ import { updateSnapState } from './state';
 /**
  * Function that toggles the disablePopups flag in the config.
  *
- * @param snap - Snap.
  * @param state - PulseSnapState.
  */
-export async function updatePopups(
-  snap: SnapsGlobalObject,
-  state: PulseSnapState,
-) {
+export async function updatePopups(state: PulseSnapState) {
   state.snapConfig.dApp.disablePopups = !state.snapConfig.dApp.disablePopups;
   await updateSnapState(snap, state);
 }
@@ -21,11 +16,9 @@ export async function updatePopups(
 /**
  * Function that opens snap dialog.
  *
- * @param snap - Snap.
  * @param params - Snap dialog params.
  */
 export async function snapDialog(
-  snap: SnapsGlobalObject,
   params: SnapDialogParams,
 ): Promise<string | boolean | null> {
   return (await snap.request({
@@ -52,13 +45,11 @@ export async function generateCommonPanel(
  * Request Hedera Account Id.
  *
  * @param origin - Source.
- * @param snap - SnapGlobalObject.
  * @param publicKey - Public key.
  * @param address - EVM address.
  */
 export async function requestHederaAccountId(
   origin: string,
-  snap: SnapsGlobalObject,
   publicKey: string,
   address: string,
 ): Promise<string> {
@@ -76,5 +67,5 @@ export async function requestHederaAccountId(
     ]),
     placeholder: '0.0.3658062',
   };
-  return (await snapDialog(snap, dialogParamsForHederaAccountId)) as string;
+  return (await snapDialog(dialogParamsForHederaAccountId)) as string;
 }

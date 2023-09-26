@@ -1,5 +1,3 @@
-import { SnapsGlobalObject } from '@metamask/snaps-types';
-
 import { divider, heading, text } from '@metamask/snaps-ui';
 import _ from 'lodash';
 import {
@@ -73,7 +71,7 @@ export async function setCurrentAccount(
       await initAccountState(snap, state, metamaskAddress);
     }
 
-    await importMetaMaskAccount(origin, snap, state, network, metamaskAddress);
+    await importMetaMaskAccount(origin, state, network, metamaskAddress);
   } catch (error: any) {
     console.error(`Error while trying to get the account: ${String(error)}`);
     throw new Error(`Error while trying to get the account: ${String(error)}`);
@@ -84,14 +82,12 @@ export async function setCurrentAccount(
  * Veramo Import metamask account.
  *
  * @param origin - Source.
- * @param snap - SnapsGlobalObject.
  * @param state - IdentitySnapState.
  * @param network - Hedera network.
  * @param metamaskAddress - EVM address.
  */
 export async function importMetaMaskAccount(
   origin: string,
-  snap: SnapsGlobalObject,
   state: PulseSnapState,
   network: string,
   metamaskAddress: string,
@@ -194,7 +190,8 @@ export async function importMetaMaskAccount(
           divider(),
         ]),
       };
-      await snapDialog(snap, dialogParamsForHederaAccountId);
+      await snapDialog(dialogParamsForHederaAccountId);
+
       // TODO: Maybe offer the user an "Activate" option that will charge them "x" amount of ETH
       console.error(
         `This Hedera account is not yet active. Please activate it by sending some HBAR to this account. Public Key: ${publicKey}, EVM Address: ${address}`,
