@@ -37,7 +37,7 @@ const GetAccountInfo: FC<Props> = ({
   const handleGetAccountInfoClick = async () => {
     setLoading(true);
     try {
-      const network = hederaNetworks.get('mainnet') as string;
+      const network = hederaNetworks.get('testnet') as string;
       setCurrentNetwork(network);
       const metamaskAddress = await getCurrentMetamaskAccount();
       setMetamaskAddress(metamaskAddress);
@@ -52,6 +52,7 @@ const GetAccountInfo: FC<Props> = ({
       );
 
       const { accountInfo, currentAccount } = response;
+
       setAccountInfo(currentAccount);
       console.log('accountInfo: ', JSON.stringify(accountInfo, null, 4));
       showModal({

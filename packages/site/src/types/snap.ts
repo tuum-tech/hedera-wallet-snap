@@ -8,16 +8,22 @@ export type Snap = {
 };
 
 export type TokenBalance = {
-  // balance has already had decimals applied
   balance: number;
   decimals: number;
+  tokenId: string;
+  name: string;
+  symbol: string;
+  tokenType: string;
+  supplyType: string;
+  totalSupply: string;
+  maxSupply: string;
 };
 
 export type AccountBalance = {
   // balance here in hbars
   hbars: number;
   timestamp: string;
-  tokens: Map<string, TokenBalance>; // Map of TOKEN -> decimals
+  tokens: Record<string, TokenBalance>;
 };
 
 export type Account = {

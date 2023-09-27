@@ -12,7 +12,9 @@ import {
 } from '../../utils';
 import { hederaNetworks } from '../../utils/hedera';
 import { Card, SendHelloButton } from '../base';
-import { GetExternalAccountRef } from '../sections/ExternalAccount';
+import ExternalAccount, {
+  GetExternalAccountRef,
+} from '../sections/ExternalAccount';
 
 type Props = {
   setCurrentNetwork: React.Dispatch<React.SetStateAction<string>>;
@@ -87,7 +89,7 @@ const TransferCrypto: FC<Props> = ({
           'Send HBAR to another account(can pass in Account Id or EVM address but not both)',
         form: (
           <>
-            {/* <ExternalAccount ref={externalAccountRef} /> */}
+            <ExternalAccount ref={externalAccountRef} />
             <label>
               Enter an account Id or an EVM address
               <input

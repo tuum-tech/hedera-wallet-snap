@@ -357,15 +357,6 @@ async function connectHederaAccount(
     }
   }
 
-  if (state.accountState[connectedAddress].keyStore.curve !== curve) {
-    console.error(
-      `You passed '${curve}' as the digital signature algorithm to use but the account '${accountId}' was derived using '${state.accountState[connectedAddress].keyStore.curve}' on '${network}'. Please make sure to pass in the correct value for "curve".`,
-    );
-    throw new Error(
-      `You passed '${curve}' as the digital signature algorithm to use but the account '${accountId}' was derived using '${state.accountState[connectedAddress].keyStore.curve}' on '${network}'. Please make sure to pass in the correct value for "curve".`,
-    );
-  }
-
   return {
     connectedAddress,
     keyStore: result,
@@ -455,8 +446,8 @@ export async function importMetaMaskAccount(
       }
 
       const accountBalance = accountInfo.balance;
-      const hbars = accountBalance.balance / 100000000;
-      const tokens = new Map<string, TokenBalance>();
+      const hbars = accountBalance.balance / 1e8;
+      const tokens: Record<string, TokenBalance> = {};
 
       // Use map to create an array of promises
       const tokenPromises = accountBalance.tokens.map(async (token: Token) => {
@@ -464,10 +455,17 @@ export async function importMetaMaskAccount(
         const tokenInfo: MirrorTokenInfo = await hederaService.getTokenById(
           tokenId,
         );
-        tokens.set(tokenId, {
-          balance: token.balance,
+        tokens[tokenId] = {
+          balance: token.balance / Math.pow(10, Number(tokenInfo.decimals)),
           decimals: Number(tokenInfo.decimals),
-        } as TokenBalance);
+          tokenId,
+          name: tokenInfo.name,
+          symbol: tokenInfo.symbol,
+          tokenType: tokenInfo.type,
+          supplyType: tokenInfo.supply_type,
+          totalSupply: tokenInfo.total_supply,
+          maxSupply: tokenInfo.max_supply,
+        } as TokenBalance;
       });
 
       // Wait for all promises to resolve

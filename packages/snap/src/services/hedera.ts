@@ -25,17 +25,23 @@ export type Token = {
   balance: number;
 };
 
+export type TokenBalance = {
+  balance: number;
+  decimals: number;
+  tokenId: string;
+  name: string;
+  symbol: string;
+  tokenType: string;
+  supplyType: string;
+  totalSupply: string;
+  maxSupply: string;
+};
+
 export type AccountBalance = {
   // balance here in hbars
   hbars: number;
   timestamp: string;
-  tokens: Map<string, TokenBalance>; // Map of TOKEN -> decimals
-};
-
-export type TokenBalance = {
-  // balance has already had decimals applied
-  balance: number;
-  decimals: number;
+  tokens: Record<string, TokenBalance>;
 };
 
 export type TxRecordTransfer = {

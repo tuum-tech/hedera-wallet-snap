@@ -6,6 +6,7 @@ import { GetAccountInfo } from '../components/cards/GetAccountInfo';
 import { ReconnectPulseSnap } from '../components/cards/ReconnectPulseSnap';
 import { SendHelloHessage } from '../components/cards/SendHelloMessage';
 import { Todo } from '../components/cards/Todo';
+import Tokens from '../components/cards/Tokens';
 import { TransferCrypto } from '../components/cards/TransferCrypto';
 import {
   CardContainer,
@@ -79,6 +80,11 @@ const Index = () => {
                 : ''}
             </dd>
           </Col>
+          {accountInfo?.balance?.tokens && (
+            <Col>
+              <Tokens tokens={accountInfo?.balance?.tokens} />
+            </Col>
+          )}
         </Row>
       </Container>
       {state.error && (

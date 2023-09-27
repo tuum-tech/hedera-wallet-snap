@@ -8,7 +8,6 @@ import {
 import {
   AccountBalance,
   SimpleTransfer,
-  TokenBalance,
   TxReceipt,
   TxReceiptExchangeRate,
   TxRecord,
@@ -49,26 +48,23 @@ export async function transferCrypto(
         outgoingHbarAmount += -transfer.amount;
       }
     } else {
-      let amount: number | undefined;
+      const multiplier = Math.pow(
+        10,
+        options.currentBalance.tokens[transfer.asset].decimals,
+      );
+      const amount = transfer.amount * multiplier;
 
-      if (transfer.amount !== undefined) {
-        const multiplier = Math.pow(
-          10,
-          (options.currentBalance.tokens.get(transfer.asset) as TokenBalance)
-            ?.decimals,
-        );
-        amount = transfer.amount * multiplier;
-      }
-
-      transaction.addTokenTransfer(transfer.asset, transfer.to, amount);
-
-      const negatedAmount = amount === undefined ? undefined : -amount;
+      transaction.addTokenTransfer(
+        transfer.asset,
+        transfer.to,
+        transfer.amount,
+      );
 
       transaction.addTokenTransfer(
         transfer.asset,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         client.operatorAccountId!,
-        negatedAmount,
+        -amount,
       );
     }
   }
@@ -96,6 +92,14 @@ export async function transferCrypto(
       '',
     );
   };
+
+  /*   const mapToObject = (map: Map<string, any>) => {
+    const obj: { [key: string]: any } = {};
+    map.forEach((value, key) => {
+      obj[key] = value;
+    });
+    return obj;
+  }; */
 
   const transfers: TxRecordTransfer[] = record.transfers.map((transfer) => ({
     accountId: transfer.accountId.toString(),
