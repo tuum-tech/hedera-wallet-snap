@@ -10,6 +10,7 @@ import { getSnapStateUnchecked } from './snap/state';
 import { PulseSnapParams } from './types/state';
 import { init } from './utils/init';
 import {
+  isExternalAccountFlagSet,
   isValidGetAccountInfoRequest,
   isValidTransferCryptoParams,
 } from './utils/params';
@@ -36,9 +37,9 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
     JSON.stringify(request.params, null, 4),
   );
 
-  let state = await getSnapStateUnchecked(snap);
+  let state = await getSnapStateUnchecked();
   if (state === null || _.isEmpty(state)) {
-    state = await init(origin, snap);
+    state = await init(origin);
   }
   console.log(
     'state:',
@@ -49,7 +50,12 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
     ),
   );
 
-  await setCurrentAccount(origin, state, request.params);
+  let isExternalAccount = false;
+  if (isExternalAccountFlagSet(request.params)) {
+    isExternalAccount = true;
+  }
+
+  await setCurrentAccount(origin, state, request.params, isExternalAccount);
   console.log(
     `Current account: ${JSON.stringify(state.currentAccount, null, 4)}`,
   );

@@ -59,7 +59,10 @@ export class HederaServiceImpl implements HederaService {
     } else if (this.network === 'previewnet') {
       client = Client.forPreviewnet();
     } else {
-      client = Client.forMainnet();
+      // client = Client.forMainnet();
+      client = Client.forNetwork({
+        'https://node01-00-grpc.swirlds.com:443': new AccountId(4),
+      });
     }
 
     // NOTE: important, ensure that we pre-compute the health state of all nodes
@@ -175,6 +178,7 @@ async function testClientOperatorMatch(client: Client) {
   try {
     await tx.execute(client);
   } catch (error: any) {
+    console.log('error: ', String(error));
     if (error instanceof StatusError) {
       if (
         error.status === Status.InsufficientTxFee ||
@@ -202,17 +206,24 @@ async function testClientOperatorMatch(client: Client) {
 /**
  * To HederaAccountInfo.
  *
+ * @param _curve - Curve that was used to derive the keys('ECDSA_SECP256K1' | 'ED25519').
  * @param _privateKey - Private Key.
  * @param _accountId - Account Id.
  * @param _network - Network.
  */
 export async function getHederaClient(
+  _curve: string,
   _privateKey: string,
   _accountId: string,
   _network: string,
 ): Promise<SimpleHederaClient | null> {
   const accountId = AccountId.fromString(_accountId);
-  const privateKey = PrivateKey.fromStringECDSA(_privateKey);
+
+  let privateKey = PrivateKey.fromStringECDSA(_privateKey);
+  if (_curve === 'ED25519') {
+    privateKey = PrivateKey.fromStringED25519(_privateKey);
+  }
+
   const wallet: Wallet = new PrivateKeySoftwareWallet(privateKey);
   const hederaService = new HederaServiceImpl(_network);
 

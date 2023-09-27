@@ -1,6 +1,12 @@
 import { AccountInfoJson } from '@hashgraph/sdk/lib/account/AccountInfo';
 import { AccountBalance } from '../services/hedera';
 
+export type ExternalAccount = {
+  externalAccount: {
+    accountIdOrEvmAddress: string;
+  };
+};
+
 export type Account = {
   metamaskAddress: string; // This is not being used currently
   hederaAccountId: string;
@@ -15,4 +21,8 @@ export type AccountInfo = {
   memo?: string;
   balance?: AccountBalance;
   extraData?: AccountInfoJson;
+};
+
+export type NetworkParams = {
+  network: string;
 };

@@ -10,7 +10,7 @@ import { updateSnapState } from './state';
  */
 export async function updatePopups(state: PulseSnapState) {
   state.snapConfig.dApp.disablePopups = !state.snapConfig.dApp.disablePopups;
-  await updateSnapState(snap, state);
+  await updateSnapState(state);
 }
 
 /**

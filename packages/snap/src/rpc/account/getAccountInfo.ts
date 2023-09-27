@@ -1,3 +1,4 @@
+import { AccountId } from '@hashgraph/sdk';
 import { AccountInfoJson } from '@hashgraph/sdk/lib/account/AccountInfo';
 import _ from 'lodash';
 import { createHederaClient } from '../../snap/account';
@@ -23,12 +24,21 @@ export async function getAccountInfo(
 
   try {
     const hederaClient = await createHederaClient(
+      state.accountState[metamaskAddress].keyStore.curve,
       state.accountState[metamaskAddress].keyStore.privateKey,
       hederaAccountId,
       network,
     );
 
     if (accountId && !_.isEmpty(accountId)) {
+      if (!AccountId.fromString(accountId)) {
+        console.error(
+          `Invalid Hedera Account Id '${accountId}' is not a valid account Id`,
+        );
+        throw new Error(
+          `Invalid Hedera Account Id '${accountId}' is not a valid account Id`,
+        );
+      }
       accountInfo = await hederaClient.getAccountInfo(accountId);
     } else {
       accountInfo = await hederaClient.getAccountInfo(hederaAccountId);
@@ -42,7 +52,7 @@ export async function getAccountInfo(
         new Date().toISOString();
 
       state.accountState[metamaskAddress].accountInfo.extraData = accountInfo;
-      await updateSnapState(snap, state);
+      await updateSnapState(state);
     }
   } catch (error: any) {
     console.error(`Error while trying to get account info: ${String(error)}`);

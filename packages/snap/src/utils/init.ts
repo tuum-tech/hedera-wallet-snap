@@ -1,4 +1,3 @@
-import { SnapsGlobalObject } from '@metamask/snaps-types';
 import { heading, text } from '@metamask/snaps-ui';
 
 import { generateCommonPanel, snapDialog } from '../snap/dialog';
@@ -9,12 +8,8 @@ import { PulseSnapState, SnapDialogParams } from '../types/state';
  * Init snap state.
  *
  * @param origin - Source.
- * @param snap - Snap.
  */
-export async function init(
-  origin: string,
-  snap: SnapsGlobalObject,
-): Promise<PulseSnapState> {
+export async function init(origin: string): Promise<PulseSnapState> {
   const dialogParams: SnapDialogParams = {
     type: 'alert',
     content: await generateCommonPanel(origin, [
@@ -27,5 +22,5 @@ export async function init(
 
   await snapDialog(dialogParams);
   console.log('starting init');
-  return await initSnapState(snap);
+  return await initSnapState();
 }

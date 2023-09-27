@@ -67,6 +67,7 @@ export async function transferCrypto(
       }
 
       const hederaClient = await createHederaClient(
+        state.accountState[metamaskAddress].keyStore.curve,
         state.accountState[metamaskAddress].keyStore.privateKey,
         hederaAccountId,
         network,

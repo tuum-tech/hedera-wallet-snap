@@ -30,6 +30,7 @@ const SendHelloHessage: FC<Props> = ({
       const network = hederaNetworks.get('testnet') as string;
       setCurrentNetwork(network);
       const metamaskAddress = await getCurrentMetamaskAccount();
+      console.log('address: ', metamaskAddress);
       setMetamaskAddress(metamaskAddress);
 
       const response: any = await sendHello(network);

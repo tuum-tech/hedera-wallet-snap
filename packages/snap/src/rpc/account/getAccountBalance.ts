@@ -17,6 +17,7 @@ export async function getAccountBalance(
 
   try {
     const hederaClient = await createHederaClient(
+      state.accountState[metamaskAddress].keyStore.curve,
       state.accountState[metamaskAddress].keyStore.privateKey,
       hederaAccountId,
       network,
@@ -28,7 +29,7 @@ export async function getAccountBalance(
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     state.accountState[metamaskAddress].accountInfo.balance!.timestamp =
       new Date().toISOString();
-    await updateSnapState(snap, state);
+    await updateSnapState(state);
   } catch (error: any) {
     console.error(
       `Error while trying to get account balance: ${String(error)}`,

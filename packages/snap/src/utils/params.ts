@@ -1,8 +1,45 @@
 import _ from 'lodash';
+import { ExternalAccount } from '../types/account';
 import {
   GetAccountInfoRequestParams,
   TransferCryptoRequestParams,
 } from '../types/params';
+
+/**
+ * Check whether the the account was imported using private key(external account).
+ *
+ * @param params - Request params.
+ * @returns Whether to treat it as an external account that was imported using private key.
+ */
+export function isExternalAccountFlagSet(params: unknown): boolean {
+  if (
+    params !== null &&
+    typeof params === 'object' &&
+    'externalAccount' in params &&
+    params.externalAccount !== null &&
+    typeof params.externalAccount === 'object'
+  ) {
+    const parameter = params as ExternalAccount;
+
+    if ('accountIdOrEvmAddress' in parameter.externalAccount) {
+      if (
+        parameter.externalAccount.accountIdOrEvmAddress !== null &&
+        typeof parameter.externalAccount.accountIdOrEvmAddress === 'string'
+      ) {
+        if (_.isEmpty(parameter.externalAccount.accountIdOrEvmAddress)) {
+          console.error(
+            'Invalid externalAccount Params passed. "accountIdOrEvmAddress" must not be empty',
+          );
+          throw new Error(
+            'Invalid externalAccount Params passed. "accountIdOrEvmAddress" must not be empty',
+          );
+        }
+        return true;
+      }
+    }
+  }
+  return false;
+}
 
 /**
  * Check Validation of getAccountInfo request.

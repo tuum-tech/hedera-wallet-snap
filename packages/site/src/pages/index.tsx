@@ -60,8 +60,14 @@ const Index = () => {
             <dd>{currentNetwork ? 'Connected' : 'Disconnected'}</dd>
             <dt>Current Network:</dt>
             <dd>{currentNetwork}</dd>
-            <dt>Currently Connected Metamask Account: </dt>
-            <dd>{metamaskAddress}</dd>
+            <dt>Currently Connected Account Type: </dt>
+            <dd>
+              {metamaskAddress === accountInfo?.metamaskAddress
+                ? 'Metamask Account'
+                : 'Non-Metamask Account'}
+            </dd>
+            <dt>Currently Connected Address: </dt>
+            <dd>{accountInfo?.metamaskAddress}</dd>
             <dt>Hedera Account ID: </dt>
             <dd>{accountInfo?.hederaAccountId}</dd>
             <dt>Hedera EVM Address: </dt>

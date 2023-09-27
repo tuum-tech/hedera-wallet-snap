@@ -8,7 +8,7 @@ export type GetExternalAccountRef = {
 
 const ExternalAccount = forwardRef(({}, ref: Ref<GetExternalAccountRef>) => {
   const [externalAccount, setExternalAccount] = useState(false);
-  const [accountId, setAccountId] = useState('');
+  const [accountIdOrEvmAddress, setAccountIdOrEvmAddress] = useState('');
 
   useImperativeHandle(ref, () => ({
     handleGetAccountParams() {
@@ -16,7 +16,7 @@ const ExternalAccount = forwardRef(({}, ref: Ref<GetExternalAccountRef>) => {
       if (externalAccount) {
         params = {
           externalAccount: {
-            accountId,
+            accountIdOrEvmAddress,
           },
         };
       }
@@ -25,7 +25,7 @@ const ExternalAccount = forwardRef(({}, ref: Ref<GetExternalAccountRef>) => {
   }));
 
   return (
-    <>
+    <div>
       <Form>
         <Form.Check
           type="checkbox"
@@ -35,16 +35,22 @@ const ExternalAccount = forwardRef(({}, ref: Ref<GetExternalAccountRef>) => {
             setExternalAccount(e.target.checked);
           }}
         />
-        <Form.Label>Account Id</Form.Label>
-        <Form.Control
-          size="lg"
-          type="text"
-          placeholder="Account Id"
-          style={{ marginBottom: 8 }}
-          onChange={(e) => setAccountId(e.target.value)}
-        />
+        {externalAccount && (
+          <>
+            <Form.Label>
+              Enter your Account Id or EVM address to connect to
+            </Form.Label>
+            <Form.Control
+              size="lg"
+              type="text"
+              placeholder="Account Id or EVM address"
+              style={{ marginBottom: 8 }}
+              onChange={(e) => setAccountIdOrEvmAddress(e.target.value)}
+            />
+          </>
+        )}
       </Form>
-    </>
+    </div>
   );
 });
 

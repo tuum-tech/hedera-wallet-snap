@@ -1,4 +1,6 @@
+import { PrivateKey } from '@hashgraph/sdk';
 import { divider, heading, text } from '@metamask/snaps-ui';
+import { Wallet, ethers } from 'ethers';
 import _ from 'lodash';
 import {
   AccountBalance,
@@ -9,13 +11,9 @@ import {
   TokenBalance,
 } from '../services/hedera';
 import { HederaServiceImpl, getHederaClient } from '../services/impl/hedera';
-import { Account } from '../types/account';
+import { Account, ExternalAccount, NetworkParams } from '../types/account';
 import { hederaNetworks } from '../types/constants';
-import {
-  HederaAccountParams,
-  PulseSnapState,
-  SnapDialogParams,
-} from '../types/state';
+import { KeyStore, PulseSnapState, SnapDialogParams } from '../types/state';
 import { generateWallet } from '../utils/keyPair';
 import { generateCommonPanel, snapDialog } from './dialog';
 import { validHederaNetwork } from './network';
@@ -33,20 +31,36 @@ const getCurrentMetamaskAccount = async (): Promise<string> => {
 };
 
 /**
+ * Adds the prefix to the EVM address.
+ *
+ * @param address - EVM Account address.
+ * @returns EVM address.
+ */
+function ensure0xPrefix(address: string): string {
+  let result = address;
+  if (!address.startsWith('0x')) {
+    result = `0x${address}`;
+  }
+  return result.toLowerCase();
+}
+
+/**
  * Function that returns account info of the currently selected MetaMask account.
  *
  * @param origin - Source.
  * @param state - PulseSnapState.
  * @param params - Parameters that were passed by the user.
+ * @param isExternalAccount - Whether this is a metamask or a non-metamask account.
  * @returns MetaMask Hedera client.
  */
 export async function setCurrentAccount(
   origin: string,
   state: PulseSnapState,
   params: unknown,
+  isExternalAccount: boolean,
 ): Promise<void> {
   try {
-    const { network = 'mainnet' } = (params ?? {}) as HederaAccountParams;
+    const { network = 'mainnet' } = (params ?? {}) as NetworkParams;
     if (!validHederaNetwork(network)) {
       console.error(
         `Invalid Hedera network '${network}'. Valid networks are '${hederaNetworks.join(
@@ -61,21 +75,266 @@ export async function setCurrentAccount(
       );
     }
 
-    const metamaskAddress = await getCurrentMetamaskAccount();
-    // Retrieve the values if already in state
-    if (!Object.keys(state.accountState).includes(metamaskAddress)) {
-      // Initialize if not in snap state
-      console.log(
-        `The address ${metamaskAddress} has NOT yet been configured in the Hedera Pulse Snap. Configuring now...`,
-      );
-      await initAccountState(snap, state, metamaskAddress);
+    let connectedAddress = '';
+    let keyStore = {} as KeyStore;
+    // Handle external account(non-metamask account)
+    if (isExternalAccount) {
+      const nonMetamaskAccount = params as ExternalAccount;
+      const { accountIdOrEvmAddress } = nonMetamaskAccount.externalAccount;
+      if (ethers.isAddress(accountIdOrEvmAddress)) {
+        const { connectedAddress: _connectedAddress, keyStore: _keyStore } =
+          await connectEVMAccount(
+            origin,
+            state,
+            ensure0xPrefix(accountIdOrEvmAddress),
+          );
+        connectedAddress = _connectedAddress;
+        keyStore = _keyStore;
+      } else {
+        try {
+          const { connectedAddress: _connectedAddress, keyStore: _keyStore } =
+            await connectHederaAccount(
+              origin,
+              state,
+              network,
+              (accountIdOrEvmAddress as string).toLowerCase(),
+            );
+          connectedAddress = _connectedAddress;
+          keyStore = _keyStore;
+        } catch (error: any) {
+          console.error(
+            `Could not connect to '${
+              accountIdOrEvmAddress as string
+            }'. Please try again: ${String(error)}`,
+          );
+          throw new Error(
+            `Could not connect to '${
+              accountIdOrEvmAddress as string
+            }'. Please try again: ${String(error)}`,
+          );
+        }
+      }
+    } else {
+      // Handle metamask connected account
+      connectedAddress = await getCurrentMetamaskAccount();
     }
 
-    await importMetaMaskAccount(origin, state, network, metamaskAddress);
+    connectedAddress = connectedAddress.toLowerCase();
+
+    // Retrieve the values if already in state
+    if (!Object.keys(state.accountState).includes(connectedAddress)) {
+      // Initialize if not in snap state
+      console.log(
+        `The address ${connectedAddress} has NOT yet been configured in the Hedera Pulse Snap. Configuring now...`,
+      );
+      await initAccountState(state, connectedAddress);
+    }
+
+    await importMetaMaskAccount(
+      origin,
+      state,
+      network,
+      connectedAddress,
+      keyStore,
+      isExternalAccount,
+    );
   } catch (error: any) {
     console.error(`Error while trying to get the account: ${String(error)}`);
     throw new Error(`Error while trying to get the account: ${String(error)}`);
   }
+}
+
+/**
+ * Connect EVM Account.
+ *
+ * @param origin - Source.
+ * @param state - Pulse state.
+ * @param evmAddress - EVM Account address.
+ */
+async function connectEVMAccount(
+  origin: string,
+  state: PulseSnapState,
+  evmAddress: string,
+): Promise<any> {
+  let result = {} as KeyStore;
+  let connectedAddress = '';
+  for (const addr of Object.keys(state.accountState)) {
+    const { keyStore } = state.accountState[addr];
+
+    if (evmAddress === addr) {
+      connectedAddress = addr;
+      result = keyStore;
+      break;
+    }
+
+    if (evmAddress === keyStore.address) {
+      connectedAddress = addr;
+      result = keyStore;
+      break;
+    }
+  }
+
+  if (_.isEmpty(connectedAddress)) {
+    const dialogParamsForPrivateKey: SnapDialogParams = {
+      type: 'prompt',
+      content: await generateCommonPanel(origin, [
+        heading('Connect to EVM Account'),
+        text('Enter private key for the following account'),
+        divider(),
+        text(`EVM Address: ${evmAddress}`),
+      ]),
+      placeholder: '2386d1d21644dc65d...', // You can use '2386d1d21644dc65d4e4b9e2242c5f155cab174916cbc46ad85622cdaeac835c' for testing purposes
+    };
+    const privateKey = (await snapDialog(dialogParamsForPrivateKey)) as string;
+
+    try {
+      const wallet: Wallet = new ethers.Wallet(privateKey);
+      if (evmAddress !== wallet.address) {
+        console.error(
+          `The private key you passed was invalid for the EVM address '${evmAddress}'. Please try again.`,
+        );
+        throw new Error(
+          `The private key you passed was invalid for the EVM address '${evmAddress}'. Please try again.`,
+        );
+      }
+      result.curve = 'ECDSA_SECP256K1';
+      result.privateKey = privateKey;
+      result.publicKey = wallet.signingKey.publicKey;
+      result.address = ensure0xPrefix(wallet.address);
+      connectedAddress = ensure0xPrefix(wallet.address);
+    } catch (error: any) {
+      console.error(
+        'Error while trying to retrieve the private key. Please try again.',
+      );
+      throw new Error(
+        'Error while trying to retrieve the private key. Please try again.',
+      );
+    }
+  }
+
+  return {
+    connectedAddress,
+    keyStore: result,
+  };
+}
+
+/**
+ * Connect Hedera Account.
+ *
+ * @param origin - Source.
+ * @param state - Pulse state.
+ * @param network - Hedera network.
+ * @param accountId - Hedera Account id.
+ */
+async function connectHederaAccount(
+  origin: string,
+  state: PulseSnapState,
+  network: string,
+  accountId: string,
+): Promise<any> {
+  let result = {} as KeyStore;
+  let connectedAddress = '';
+  for (const addr of Object.keys(state.accountState)) {
+    const { keyStore } = state.accountState[addr];
+    if (keyStore.hederaAccountId === accountId) {
+      connectedAddress = addr;
+      result = keyStore;
+      break;
+    }
+  }
+
+  if (_.isEmpty(connectedAddress)) {
+    const dialogParamsForPrivateKey: SnapDialogParams = {
+      type: 'prompt',
+      content: await generateCommonPanel(origin, [
+        heading('Connect to Hedera Account'),
+        text('Enter private key for the following account'),
+        divider(),
+        text(`Account Id: ${accountId}`),
+      ]),
+      placeholder: '2386d1d21644dc65d...', // You can use '2386d1d21644dc65d4e4b9e2242c5f155cab174916cbc46ad85622cdaeac835c' for testing purposes
+    };
+    const privateKey = (await snapDialog(dialogParamsForPrivateKey)) as string;
+
+    try {
+      const hederaService = new HederaServiceImpl(network);
+      const accountInfo: MirrorAccountInfo =
+        await hederaService.getMirrorAccountInfo(accountId);
+      const publicKey =
+        PrivateKey.fromString(privateKey).publicKey.toStringRaw();
+      if (_.isEmpty(accountInfo)) {
+        const dialogParamsForHederaAccountId: SnapDialogParams = {
+          type: 'alert',
+          content: await generateCommonPanel(origin, [
+            heading('Hedera Account Status'),
+            text(
+              `This Hedera account is not yet active on ${network}. Please activate it by sending some HBAR to this account.`,
+            ),
+            divider(),
+            text(`Public Key: ${publicKey}`),
+            divider(),
+          ]),
+        };
+        await snapDialog(dialogParamsForHederaAccountId);
+
+        console.error(
+          `This Hedera account is not yet active. Please activate it by sending some HBAR to this account. Public Key: ${publicKey}`,
+        );
+        throw new Error(
+          `This Hedera account is not yet active. Please activate it by sending some HBAR to this account. Public Key: ${publicKey}`,
+        );
+      }
+      const hederaClient = await getHederaClient(
+        accountInfo.key._type,
+        privateKey,
+        accountId,
+        network,
+      );
+      if (hederaClient) {
+        result.privateKey = hederaClient
+          ?.getPrivateKey()
+          ?.toStringRaw() as string;
+        result.curve = accountInfo.key._type as 'ECDSA_SECP256K1' | 'ED25519';
+        result.publicKey = hederaClient.getPublicKey().toStringRaw();
+        result.hederaAccountId = accountId;
+        result.address = ensure0xPrefix(accountInfo.evm_address);
+        connectedAddress = ensure0xPrefix(accountInfo.evm_address);
+      } else {
+        const dialogParamsForHederaAccountId: SnapDialogParams = {
+          type: 'alert',
+          content: await generateCommonPanel(origin, [
+            heading('Hedera Account Status'),
+            text(
+              `The private key you passed is not associated with the Hedera account '${accountId}'`,
+            ),
+            divider(),
+            text(`Public Key: ${publicKey}`),
+            divider(),
+          ]),
+        };
+        await snapDialog(dialogParamsForHederaAccountId);
+
+        console.error(
+          `The private key you passed is not associated with the Hedera account '${accountId}'`,
+        );
+        throw new Error(
+          `The private key you passed is not associated with the Hedera account '${accountId}'`,
+        );
+      }
+    } catch (error: any) {
+      console.error(
+        'Error while trying to setup a Hedera client. Please try again.',
+      );
+      throw new Error(
+        'Error while trying to setup a Hedera client. Please try again.',
+      );
+    }
+  }
+
+  return {
+    connectedAddress,
+    keyStore: result,
+  };
 }
 
 /**
@@ -84,51 +343,81 @@ export async function setCurrentAccount(
  * @param origin - Source.
  * @param state - IdentitySnapState.
  * @param network - Hedera network.
- * @param metamaskAddress - EVM address.
+ * @param connectedAddress - Currently connected EVm address.
+ * @param keyStore - Keystore for private, public keys and EVM address.
+ * @param isExternalAccount - Whether this is a metamask or a non-metamask account.
  */
 export async function importMetaMaskAccount(
   origin: string,
   state: PulseSnapState,
   network: string,
-  metamaskAddress: string,
+  connectedAddress: string,
+  keyStore: KeyStore,
+  isExternalAccount: boolean,
 ): Promise<void> {
-  let { privateKey, publicKey, address } =
-    state.accountState[metamaskAddress].keyStore;
-  let balance = state.accountState[metamaskAddress].accountInfo
-    .balance as AccountBalance;
+  let curve = '';
+  let privateKey = '';
+  let publicKey = '';
+  let address = '';
+  let hederaAccountId = '';
+  let idOrAliasOrEvmAddress = '';
 
-  if (_.isEmpty(privateKey)) {
-    const res = await generateWallet(metamaskAddress);
-    if (!res) {
-      console.log('Failed to generate snap wallet for DID operations');
-      throw new Error('Failed to generate snap wallet for DID operations');
+  if (isExternalAccount) {
+    curve = keyStore.curve;
+    privateKey = keyStore.privateKey;
+    publicKey = keyStore.publicKey;
+    address = keyStore.address;
+    hederaAccountId = keyStore.hederaAccountId;
+  } else {
+    const { keyStore: ksInner } = state.accountState[connectedAddress];
+    curve = ksInner.curve;
+    privateKey = ksInner.privateKey;
+    publicKey = ksInner.publicKey;
+    address = ksInner.address;
+
+    if (_.isEmpty(privateKey)) {
+      // Generate a new wallet according to the Hedera Pulse's entrophy combined with the currently connected EVM address
+      const res = await generateWallet(connectedAddress);
+      if (!res) {
+        console.log('Failed to generate snap wallet for DID operations');
+        throw new Error('Failed to generate snap wallet for DID operations');
+      }
+      curve = 'ECDSA_SECP256K1';
+      privateKey = res.privateKey;
+      publicKey = res.publicKey;
+      address = res.address;
     }
-    const {
-      privateKey: _privateKey,
-      publicKey: _publicKey,
-      address: _address,
-    } = res;
-    privateKey = _privateKey;
-    publicKey = _publicKey;
-    address = _address;
+    hederaAccountId = await getHederaAccountIdIfExists(state, address);
   }
 
-  // eslint-disable-next-line require-atomic-updates
-  state.accountState[metamaskAddress].keyStore = {
-    privateKey,
-    publicKey,
-    address,
-  };
+  address = address.toLowerCase();
 
-  let hederaAccountId = await getHederaAccountIdIfExists(state, address);
   if (_.isEmpty(hederaAccountId)) {
+    idOrAliasOrEvmAddress = address;
+  } else {
+    idOrAliasOrEvmAddress = hederaAccountId;
+  }
+
+  let { balance } = state.accountState[connectedAddress].accountInfo;
+  if (
+    _.isEmpty(hederaAccountId) ||
+    _.isEmpty(state.accountState[connectedAddress].accountInfo)
+  ) {
     const hederaService = new HederaServiceImpl(network);
     const accountInfo: MirrorAccountInfo =
-      await hederaService.getMirrorAccountInfo(address);
+      await hederaService.getMirrorAccountInfo(idOrAliasOrEvmAddress);
     if (!_.isEmpty(accountInfo)) {
       hederaAccountId = accountInfo.account;
-      // eslint-disable-next-line require-atomic-updates
-      state.accountState[metamaskAddress].accountId = hederaAccountId;
+
+      // Make sure that the EVM address of this accountId matches the one on Hedera
+      if (accountInfo.evm_address !== address) {
+        console.error(
+          `The Hedera account '${hederaAccountId}' is associated with the EVM address '${accountInfo.evm_address}' but you tried to associate it with the address '${address}.`,
+        );
+        throw new Error(
+          `The Hedera account '${hederaAccountId}' is associated with the EVM address '${accountInfo.evm_address}' but you tried to associate it with the address '${address}.`,
+        );
+      }
 
       const accountBalance = accountInfo.balance;
       const hbars = accountBalance.balance / 100000000;
@@ -157,13 +446,8 @@ export async function importMetaMaskAccount(
         tokens,
       } as AccountBalance;
 
-      console.log(
-        'created_timestamp: ',
-        accountInfo.created_timestamp,
-        typeof accountInfo.created_timestamp,
-      );
       // eslint-disable-next-line require-atomic-updates
-      state.accountState[metamaskAddress].accountInfo = {
+      state.accountState[connectedAddress].accountInfo = {
         alias: accountInfo.alias,
         createdTime: new Date(
           parseFloat(accountInfo.created_timestamp) * 1000,
@@ -204,29 +488,41 @@ export async function importMetaMaskAccount(
 
   // eslint-disable-next-line require-atomic-updates
   state.currentAccount = {
-    metamaskAddress,
+    metamaskAddress: connectedAddress,
     hederaAccountId,
     hederaEvmAddress: address,
     balance,
     network,
   } as Account;
 
-  await updateSnapState(snap, state);
+  // eslint-disable-next-line require-atomic-updates
+  state.accountState[connectedAddress].keyStore = {
+    curve: curve as 'ECDSA_SECP256K1' | 'ED25519',
+    privateKey,
+    publicKey,
+    address,
+    hederaAccountId,
+  };
+
+  await updateSnapState(state);
 }
 
 /**
  * Create Hedera Client to use for transactions.
  *
+ * @param curve - Curve that was used to derive the keys('ECDSA_SECP256K1' | 'ED25519').
  * @param privateKey - Private key of the account.
  * @param hederaAccountId - Hedera Account ID.
  * @param network - Hedera network.
  */
 export async function createHederaClient(
+  curve: string,
   privateKey: string,
   hederaAccountId: string,
   network: string,
 ): Promise<SimpleHederaClient> {
   const hederaClient = await getHederaClient(
+    curve,
     privateKey,
     hederaAccountId,
     network,

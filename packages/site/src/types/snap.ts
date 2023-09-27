@@ -7,6 +7,19 @@ export type Snap = {
   initialPermissions: Record<string, unknown>;
 };
 
+export type TokenBalance = {
+  // balance has already had decimals applied
+  balance: number;
+  decimals: number;
+};
+
+export type AccountBalance = {
+  // balance here in hbars
+  hbars: number;
+  timestamp: string;
+  tokens: Map<string, TokenBalance>; // Map of TOKEN -> decimals
+};
+
 export type Account = {
   metamaskAddress: string;
   hederaAccountId: string;
@@ -15,24 +28,12 @@ export type Account = {
   network: string;
 };
 
-export type AccountBalance = {
-  // balance here in hbars
-  hbars: number;
-  tokens: Map<string, TokenBalance>; // Map of TOKEN -> decimals
-};
-
-export type TokenBalance = {
-  // balance has already had decimals applied
-  balance: number;
-  decimals: number;
-};
-
 export type SimpleTransfer = {
   // HBAR or Token ID (as string)
-  asset?: string;
-  to?: string;
+  asset: string;
+  to: string;
   // amount must be in low denom
-  amount?: number;
+  amount: number;
 };
 
 export type TransferCryptoRequestParams = {
@@ -43,6 +44,6 @@ export type TransferCryptoRequestParams = {
 
 export type ExternalAccountParams = {
   externalAccount: {
-    accountId: string;
+    accountIdOrEvmAddress: string;
   };
 };

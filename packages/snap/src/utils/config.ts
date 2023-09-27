@@ -5,11 +5,12 @@ import { KeyStore, PulseAccountState, PulseSnapState } from '../types/state';
 
 const emptyAccountState = {
   keyStore: {
+    curve: 'ECDSA_SECP256K1',
     privateKey: '',
     publicKey: '',
     address: '',
+    hederaAccountId: '',
   } as KeyStore,
-  accountId: '',
   accountInfo: {} as AccountInfo,
 } as PulseAccountState;
 

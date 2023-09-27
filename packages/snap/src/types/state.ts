@@ -28,9 +28,11 @@ export type PulseSnapConfig = {
 };
 
 export type KeyStore = {
+  curve: 'ECDSA_SECP256K1' | 'ED25519';
   privateKey: string;
   publicKey: string;
   address: string;
+  hederaAccountId: string;
 };
 
 /**
@@ -38,7 +40,6 @@ export type KeyStore = {
  */
 export type PulseAccountState = {
   keyStore: KeyStore;
-  accountId: string;
   accountInfo: AccountInfo;
 };
 
@@ -51,8 +52,4 @@ export type SnapDialogParams = {
   type: 'alert' | 'confirmation' | 'prompt';
   content: Panel;
   placeholder?: string;
-};
-
-export type HederaAccountParams = {
-  network: string;
 };
