@@ -4,6 +4,7 @@ import { AccountBalance } from '../services/hedera';
 export type ExternalAccount = {
   externalAccount: {
     accountIdOrEvmAddress: string;
+    curve?: 'ECDSA_SECP256K1' | 'ED25519';
   };
 };
 

@@ -41,11 +41,11 @@ export const CardContainer = styled.div`
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: space-between;
-  max-width: 125rem;
+  max-width: 130rem;
   width: 100%;
   height: 100%;
   margin-top: 1.5rem;
-  gap: 16px;
+  gap: 5px;
 `;
 
 export const Notice = styled.div`

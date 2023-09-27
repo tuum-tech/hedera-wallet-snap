@@ -34,6 +34,23 @@ export function isExternalAccountFlagSet(params: unknown): boolean {
             'Invalid externalAccount Params passed. "accountIdOrEvmAddress" must not be empty',
           );
         }
+        if (
+          'curve' in parameter.externalAccount &&
+          parameter.externalAccount.curve !== null
+        ) {
+          if (
+            typeof parameter.externalAccount.curve !== 'string' ||
+            (parameter.externalAccount.curve !== 'ECDSA_SECP256K1' &&
+              parameter.externalAccount.curve !== 'ED25519')
+          ) {
+            console.error(
+              'Invalid externalAccount Params passed. "curve" must be a string and must be either "ECDSA_SECP256K1" or "ED25519"',
+            );
+            throw new Error(
+              'Invalid externalAccount Params passed. "curve" must be a string and must be either "ECDSA_SECP256K1" or "ED25519"',
+            );
+          }
+        }
         return true;
       }
     }

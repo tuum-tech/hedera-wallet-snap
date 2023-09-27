@@ -178,7 +178,6 @@ async function testClientOperatorMatch(client: Client) {
   try {
     await tx.execute(client);
   } catch (error: any) {
-    console.log('error: ', String(error));
     if (error instanceof StatusError) {
       if (
         error.status === Status.InsufficientTxFee ||

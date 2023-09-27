@@ -37,7 +37,7 @@ const GetAccountInfo: FC<Props> = ({
   const handleGetAccountInfoClick = async () => {
     setLoading(true);
     try {
-      const network = hederaNetworks.get('testnet') as string;
+      const network = hederaNetworks.get('mainnet') as string;
       setCurrentNetwork(network);
       const metamaskAddress = await getCurrentMetamaskAccount();
       setMetamaskAddress(metamaskAddress);
@@ -83,6 +83,7 @@ const GetAccountInfo: FC<Props> = ({
                 onChange={(e) => setAccountId(e.target.value)}
               />
             </label>
+            <br />
           </>
         ),
         button: (

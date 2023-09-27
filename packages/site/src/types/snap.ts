@@ -45,5 +45,6 @@ export type TransferCryptoRequestParams = {
 export type ExternalAccountParams = {
   externalAccount: {
     accountIdOrEvmAddress: string;
+    curve?: 'ECDSA_SECP256K1' | 'ED25519';
   };
 };

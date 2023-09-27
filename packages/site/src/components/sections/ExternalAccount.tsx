@@ -9,16 +9,20 @@ export type GetExternalAccountRef = {
 const ExternalAccount = forwardRef(({}, ref: Ref<GetExternalAccountRef>) => {
   const [externalAccount, setExternalAccount] = useState(false);
   const [accountIdOrEvmAddress, setAccountIdOrEvmAddress] = useState('');
+  const [curve, setCurve] = useState('');
 
   useImperativeHandle(ref, () => ({
     handleGetAccountParams() {
-      let params;
+      let params = {} as ExternalAccountParams;
       if (externalAccount) {
         params = {
           externalAccount: {
             accountIdOrEvmAddress,
           },
         };
+        if (curve) {
+          params.externalAccount.curve = curve as 'ECDSA_SECP256K1' | 'ED25519';
+        }
       }
       return params;
     },
@@ -46,6 +50,17 @@ const ExternalAccount = forwardRef(({}, ref: Ref<GetExternalAccountRef>) => {
               placeholder="Account Id or EVM address"
               style={{ marginBottom: 8 }}
               onChange={(e) => setAccountIdOrEvmAddress(e.target.value)}
+            />
+            <Form.Label>
+              Enter the type of Elliptic Curve to use(default value:
+              'ECDSA_SECP256K1').
+            </Form.Label>
+            <Form.Control
+              size="lg"
+              type="text"
+              placeholder="ECDSA_SECP256K1 or ED25519(Can be empty)"
+              style={{ marginBottom: 8 }}
+              onChange={(e) => setCurve(e.target.value)}
             />
           </>
         )}

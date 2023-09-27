@@ -80,12 +80,23 @@ export async function setCurrentAccount(
     // Handle external account(non-metamask account)
     if (isExternalAccount) {
       const nonMetamaskAccount = params as ExternalAccount;
-      const { accountIdOrEvmAddress } = nonMetamaskAccount.externalAccount;
+      const { accountIdOrEvmAddress, curve = 'ECDSA_SECP256K1' } =
+        nonMetamaskAccount.externalAccount;
       if (ethers.isAddress(accountIdOrEvmAddress)) {
+        if (curve !== 'ECDSA_SECP256K1') {
+          console.error(
+            `You must use 'ECDSA_SECP256K1' as the curve if you want to import an EVM address. Please make sure to pass in the correct value for "curve".`,
+          );
+          throw new Error(
+            `You must use 'ECDSA_SECP256K1' as the curve if you want to import an EVM address. Please make sure to pass in the correct value for "curve".`,
+          );
+        }
+
         const { connectedAddress: _connectedAddress, keyStore: _keyStore } =
           await connectEVMAccount(
             origin,
             state,
+            curve,
             ensure0xPrefix(accountIdOrEvmAddress),
           );
         connectedAddress = _connectedAddress;
@@ -97,6 +108,7 @@ export async function setCurrentAccount(
               origin,
               state,
               network,
+              curve,
               (accountIdOrEvmAddress as string).toLowerCase(),
             );
           connectedAddress = _connectedAddress;
@@ -149,11 +161,13 @@ export async function setCurrentAccount(
  *
  * @param origin - Source.
  * @param state - Pulse state.
+ * @param curve - Public Key curve('ECDSA_SECP256K1' | 'ED25519').
  * @param evmAddress - EVM Account address.
  */
 async function connectEVMAccount(
   origin: string,
   state: PulseSnapState,
+  curve: 'ECDSA_SECP256K1' | 'ED25519',
   evmAddress: string,
 ): Promise<any> {
   let result = {} as KeyStore;
@@ -197,7 +211,7 @@ async function connectEVMAccount(
           `The private key you passed was invalid for the EVM address '${evmAddress}'. Please try again.`,
         );
       }
-      result.curve = 'ECDSA_SECP256K1';
+      result.curve = curve;
       result.privateKey = privateKey;
       result.publicKey = wallet.signingKey.publicKey;
       result.address = ensure0xPrefix(wallet.address);
@@ -224,12 +238,14 @@ async function connectEVMAccount(
  * @param origin - Source.
  * @param state - Pulse state.
  * @param network - Hedera network.
+ * @param curve - Public Key curve('ECDSA_SECP256K1' | 'ED25519').
  * @param accountId - Hedera Account id.
  */
 async function connectHederaAccount(
   origin: string,
   state: PulseSnapState,
   network: string,
+  curve: 'ECDSA_SECP256K1' | 'ED25519',
   accountId: string,
 ): Promise<any> {
   let result = {} as KeyStore;
@@ -268,7 +284,7 @@ async function connectHederaAccount(
           content: await generateCommonPanel(origin, [
             heading('Hedera Account Status'),
             text(
-              `This Hedera account is not yet active on ${network}. Please activate it by sending some HBAR to this account.`,
+              `This Hedera account is not yet active on ${network}. Please activate it by sending some HBAR to this account on '${network}'.`,
             ),
             divider(),
             text(`Public Key: ${publicKey}`),
@@ -278,14 +294,24 @@ async function connectHederaAccount(
         await snapDialog(dialogParamsForHederaAccountId);
 
         console.error(
-          `This Hedera account is not yet active. Please activate it by sending some HBAR to this account. Public Key: ${publicKey}`,
+          `This Hedera account is not yet active. Please activate it by sending some HBAR to this account on '${network}'. Public Key: ${publicKey}`,
         );
         throw new Error(
-          `This Hedera account is not yet active. Please activate it by sending some HBAR to this account. Public Key: ${publicKey}`,
+          `This Hedera account is not yet active. Please activate it by sending some HBAR to this account on '${network}'. Public Key: ${publicKey}`,
         );
       }
+
+      if (accountInfo.key._type !== curve) {
+        console.error(
+          `You passed '${curve}' as the digital signature algorithm to use but the account '${accountId}' was derived using '${accountInfo.key._type}' on '${network}'. Please make sure to pass in the correct value for "curve".`,
+        );
+        throw new Error(
+          `You passed '${curve}' as the digital signature algorithm to use but the account '${accountId}' was derived using '${accountInfo.key._type}' on '${network}'. Please make sure to pass in the correct value for "curve".`,
+        );
+      }
+
       const hederaClient = await getHederaClient(
-        accountInfo.key._type,
+        curve,
         privateKey,
         accountId,
         network,
@@ -294,7 +320,7 @@ async function connectHederaAccount(
         result.privateKey = hederaClient
           ?.getPrivateKey()
           ?.toStringRaw() as string;
-        result.curve = accountInfo.key._type as 'ECDSA_SECP256K1' | 'ED25519';
+        result.curve = curve;
         result.publicKey = hederaClient.getPublicKey().toStringRaw();
         result.hederaAccountId = accountId;
         result.address = ensure0xPrefix(accountInfo.evm_address);
@@ -323,12 +349,21 @@ async function connectHederaAccount(
       }
     } catch (error: any) {
       console.error(
-        'Error while trying to setup a Hedera client. Please try again.',
+        `Could not setup a Hedera client. Please try again: ${String(error)}`,
       );
       throw new Error(
-        'Error while trying to setup a Hedera client. Please try again.',
+        `Could not setup a Hedera client. Please try again: ${String(error)}`,
       );
     }
+  }
+
+  if (state.accountState[connectedAddress].keyStore.curve !== curve) {
+    console.error(
+      `You passed '${curve}' as the digital signature algorithm to use but the account '${accountId}' was derived using '${state.accountState[connectedAddress].keyStore.curve}' on '${network}'. Please make sure to pass in the correct value for "curve".`,
+    );
+    throw new Error(
+      `You passed '${curve}' as the digital signature algorithm to use but the account '${accountId}' was derived using '${state.accountState[connectedAddress].keyStore.curve}' on '${network}'. Please make sure to pass in the correct value for "curve".`,
+    );
   }
 
   return {
