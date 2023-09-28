@@ -18,14 +18,14 @@ export async function getAccountInfo(
 ): Promise<AccountInfoJson> {
   const { state } = pulseSnapParams;
 
-  const { metamaskAddress, hederaAccountId, network } = state.currentAccount;
+  const { hederaAccountId, hederaEvmAddress, network } = state.currentAccount;
 
   let accountInfo = {} as AccountInfoJson;
 
   try {
     const hederaClient = await createHederaClient(
-      state.accountState[metamaskAddress].keyStore.curve,
-      state.accountState[metamaskAddress].keyStore.privateKey,
+      state.accountState[hederaEvmAddress][network].keyStore.curve,
+      state.accountState[hederaEvmAddress][network].keyStore.privateKey,
       hederaAccountId,
       network,
     );
@@ -43,15 +43,16 @@ export async function getAccountInfo(
     } else {
       accountInfo = await hederaClient.getAccountInfo(hederaAccountId);
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      state.accountState[metamaskAddress].accountInfo.balance!.hbars = Number(
-        accountInfo.balance.toString().replace(' ℏ', ''),
-      );
+      state.accountState[hederaEvmAddress][network].accountInfo.balance!.hbars =
+        Number(accountInfo.balance.toString().replace(' ℏ', ''));
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      state.accountState[metamaskAddress].accountInfo.balance!.timestamp =
-        new Date().toISOString();
+      state.accountState[hederaEvmAddress][
+        network
+      ].accountInfo.balance!.timestamp = new Date().toISOString();
 
-      state.accountState[metamaskAddress].accountInfo.extraData = accountInfo;
+      state.accountState[hederaEvmAddress][network].accountInfo.extraData =
+        accountInfo;
       await updateSnapState(state);
     }
   } catch (error: any) {

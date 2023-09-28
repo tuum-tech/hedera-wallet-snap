@@ -1,5 +1,6 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
+import Select from 'react-select';
 import { Card, InstallFlaskButton } from '../components/base';
 import { ConnectPulseSnap } from '../components/cards/ConnectPulseSnap';
 import { GetAccountInfo } from '../components/cards/GetAccountInfo';
@@ -8,6 +9,7 @@ import { SendHelloHessage } from '../components/cards/SendHelloMessage';
 import { Todo } from '../components/cards/Todo';
 import Tokens from '../components/cards/Tokens';
 import { TransferCrypto } from '../components/cards/TransferCrypto';
+import { networkOptions } from '../config/constants';
 import {
   CardContainer,
   ErrorMessage,
@@ -15,26 +17,24 @@ import {
   Notice,
   PageContainer,
   Span,
+  Subtitle,
 } from '../config/styles';
 import { MetaMaskContext, MetamaskActions } from '../contexts/MetamaskContext';
 import { Account } from '../types/snap';
 import { connectSnap, getSnap } from '../utils';
-import { hederaNetworks } from '../utils/hedera';
 
 const Index = () => {
   const [state, dispatch] = useContext(MetaMaskContext);
-  const [metamaskAddress, setMetamaskAddress] = useState('');
-  const [currentNetwork, setCurrentNetwork] = useState('');
+  const [currentNetwork, setCurrentNetwork] = useState(networkOptions[0]);
   const [accountInfo, setAccountInfo] = useState<Account>({} as Account);
 
-  useEffect(() => {
-    setMetamaskAddress(metamaskAddress);
-  }, [metamaskAddress]);
+  const handleNetworkChange = (network: any) => {
+    setCurrentNetwork(network);
+  };
 
   const handleConnectClick = async () => {
     try {
-      setCurrentNetwork(hederaNetworks.get('testnet') as string);
-      setMetamaskAddress(await connectSnap());
+      await connectSnap();
       const installedSnap = await getSnap();
       console.log('Installed Snap: ', installedSnap);
 
@@ -54,25 +54,32 @@ const Index = () => {
       <Heading>
         Welcome to <Span>Hedera Pulse Snap Demo</Span>
       </Heading>
+      <Subtitle>
+        <label>Select network</label>
+        <Select
+          closeMenuOnSelect
+          isSearchable={false}
+          isClearable={false}
+          options={networkOptions}
+          value={currentNetwork}
+          onChange={handleNetworkChange}
+          styles={{
+            control: (base: any) => ({
+              ...base,
+              border: `1px solid grey`,
+              marginBottom: 8,
+            }),
+          }}
+        />
+      </Subtitle>
       <Container>
         <Row>
           <Col>
-            <dt>Status:</dt>
-            <dd>{currentNetwork ? 'Connected' : 'Disconnected'}</dd>
-            <dt>Current Network:</dt>
-            <dd>{currentNetwork}</dd>
-            <dt>Currently Connected Account Type: </dt>
-            <dd>
-              {metamaskAddress === accountInfo?.metamaskAddress
-                ? 'Metamask Account'
-                : 'Non-Metamask Account'}
-            </dd>
-            <dt>Currently Connected Address: </dt>
-            <dd>{accountInfo?.metamaskAddress}</dd>
             <dt>Hedera Account ID: </dt>
             <dd>{accountInfo?.hederaAccountId}</dd>
             <dt>Hedera EVM Address: </dt>
             <dd>{accountInfo?.hederaEvmAddress}</dd>
+
             <dt>Balance: </dt>
             <dd>
               {accountInfo?.balance?.hbars
@@ -108,20 +115,17 @@ const Index = () => {
         <ReconnectPulseSnap handleConnectClick={handleConnectClick} />
 
         <SendHelloHessage
-          setCurrentNetwork={setCurrentNetwork}
-          setMetamaskAddress={setMetamaskAddress}
+          network={currentNetwork.value}
           setAccountInfo={setAccountInfo}
         />
 
         <GetAccountInfo
-          setCurrentNetwork={setCurrentNetwork}
-          setMetamaskAddress={setMetamaskAddress}
+          network={currentNetwork.value}
           setAccountInfo={setAccountInfo}
         />
 
         <TransferCrypto
-          setCurrentNetwork={setCurrentNetwork}
-          setMetamaskAddress={setMetamaskAddress}
+          network={currentNetwork.value}
           setAccountInfo={setAccountInfo}
         />
 

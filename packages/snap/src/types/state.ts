@@ -7,9 +7,9 @@ export type PulseSnapState = {
 
   /**
    * Account specific storage
-   * mapping(address -> state)
+   * mapping(evm address -> mapping(network -> state))
    */
-  accountState: Record<string, PulseAccountState>;
+  accountState: Record<string, Record<string, PulseAccountState>>;
 
   /**
    * Configuration for PulseSnap

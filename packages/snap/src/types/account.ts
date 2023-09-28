@@ -9,7 +9,6 @@ export type ExternalAccount = {
 };
 
 export type Account = {
-  metamaskAddress: string; // This is not being used currently
   hederaAccountId: string;
   hederaEvmAddress: string;
   balance: AccountBalance;

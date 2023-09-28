@@ -27,7 +27,6 @@ export type AccountBalance = {
 };
 
 export type Account = {
-  metamaskAddress: string;
   hederaAccountId: string;
   hederaEvmAddress: string;
   balance: AccountBalance;

@@ -5,28 +5,18 @@ import {
 } from '../../contexts/MetamaskContext';
 import useModal from '../../hooks/useModal';
 import { Account } from '../../types/snap';
-import {
-  getAccountInfo,
-  getCurrentMetamaskAccount,
-  shouldDisplayReconnectButton,
-} from '../../utils';
-import { hederaNetworks } from '../../utils/hedera';
+import { getAccountInfo, shouldDisplayReconnectButton } from '../../utils';
 import { Card, SendHelloButton } from '../base';
 import ExternalAccount, {
   GetExternalAccountRef,
 } from '../sections/ExternalAccount';
 
 type Props = {
-  setCurrentNetwork: React.Dispatch<React.SetStateAction<string>>;
-  setMetamaskAddress: React.Dispatch<React.SetStateAction<string>>;
+  network: string;
   setAccountInfo: React.Dispatch<React.SetStateAction<Account>>;
 };
 
-const GetAccountInfo: FC<Props> = ({
-  setCurrentNetwork,
-  setMetamaskAddress,
-  setAccountInfo,
-}) => {
+const GetAccountInfo: FC<Props> = ({ network, setAccountInfo }) => {
   const [state, dispatch] = useContext(MetaMaskContext);
   const [loading, setLoading] = useState(false);
   const { showModal } = useModal();
@@ -37,11 +27,6 @@ const GetAccountInfo: FC<Props> = ({
   const handleGetAccountInfoClick = async () => {
     setLoading(true);
     try {
-      const network = hederaNetworks.get('testnet') as string;
-      setCurrentNetwork(network);
-      const metamaskAddress = await getCurrentMetamaskAccount();
-      setMetamaskAddress(metamaskAddress);
-
       const externalAccountParams =
         externalAccountRef.current?.handleGetAccountParams();
 

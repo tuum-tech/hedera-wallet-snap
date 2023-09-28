@@ -13,22 +13,23 @@ export async function getAccountBalance(
 ): Promise<number> {
   const { state } = pulseSnapParams;
 
-  const { metamaskAddress, hederaAccountId, network } = state.currentAccount;
+  const { hederaAccountId, hederaEvmAddress, network } = state.currentAccount;
 
   try {
     const hederaClient = await createHederaClient(
-      state.accountState[metamaskAddress].keyStore.curve,
-      state.accountState[metamaskAddress].keyStore.privateKey,
+      state.accountState[hederaEvmAddress][network].keyStore.curve,
+      state.accountState[hederaEvmAddress][network].keyStore.privateKey,
       hederaAccountId,
       network,
     );
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    state.accountState[metamaskAddress].accountInfo.balance!.hbars =
+    state.accountState[hederaEvmAddress][network].accountInfo.balance!.hbars =
       await hederaClient.getAccountBalance();
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    state.accountState[metamaskAddress].accountInfo.balance!.timestamp =
-      new Date().toISOString();
+    state.accountState[hederaEvmAddress][
+      network
+    ].accountInfo.balance!.timestamp = new Date().toISOString();
     await updateSnapState(state);
   } catch (error: any) {
     console.error(
@@ -39,6 +40,6 @@ export async function getAccountBalance(
     );
   }
 
-  return state.accountState[metamaskAddress].accountInfo.balance
+  return state.accountState[hederaEvmAddress][network].accountInfo.balance
     ?.hbars as number;
 }

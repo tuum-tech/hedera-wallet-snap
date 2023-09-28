@@ -96,6 +96,7 @@ export async function setCurrentAccount(
           await connectEVMAccount(
             origin,
             state,
+            network,
             curve,
             ensure0xPrefix(accountIdOrEvmAddress),
           );
@@ -129,17 +130,36 @@ export async function setCurrentAccount(
     } else {
       // Handle metamask connected account
       connectedAddress = await getCurrentMetamaskAccount();
+      // Generate a new wallet according to the Hedera Pulse's entrophy combined with the currently connected EVM address
+      const res = await generateWallet(connectedAddress);
+      if (!res) {
+        console.log('Failed to generate snap wallet for DID operations');
+        throw new Error('Failed to generate snap wallet for DID operations');
+      }
+      keyStore.curve = 'ECDSA_SECP256K1';
+      keyStore.privateKey = res.privateKey;
+      keyStore.publicKey = res.publicKey;
+      keyStore.address = res.address.toLowerCase();
+      connectedAddress = res.address.toLowerCase();
+      keyStore.hederaAccountId = await getHederaAccountIdIfExists(
+        state,
+        network,
+        connectedAddress,
+      );
     }
 
     connectedAddress = connectedAddress.toLowerCase();
 
-    // Retrieve the values if already in state
-    if (!Object.keys(state.accountState).includes(connectedAddress)) {
-      // Initialize if not in snap state
+    // Initialize if not in snap state
+    if (
+      !Object.keys(state.accountState).includes(connectedAddress) ||
+      (Object.keys(state.accountState).includes(connectedAddress) &&
+        !Object.keys(state.accountState[connectedAddress]).includes(network))
+    ) {
       console.log(
-        `The address ${connectedAddress} has NOT yet been configured in the Hedera Pulse Snap. Configuring now...`,
+        `The address ${connectedAddress} has NOT yet been configured for the '${network}' network in the Hedera Pulse Snap. Configuring now...`,
       );
-      await initAccountState(state, connectedAddress);
+      await initAccountState(state, network, connectedAddress);
     }
 
     await importMetaMaskAccount(
@@ -148,7 +168,6 @@ export async function setCurrentAccount(
       network,
       connectedAddress,
       keyStore,
-      isExternalAccount,
     );
   } catch (error: any) {
     console.error(`Error while trying to get the account: ${String(error)}`);
@@ -161,30 +180,28 @@ export async function setCurrentAccount(
  *
  * @param origin - Source.
  * @param state - Pulse state.
+ * @param network - Hedera network.
  * @param curve - Public Key curve('ECDSA_SECP256K1' | 'ED25519').
  * @param evmAddress - EVM Account address.
  */
 async function connectEVMAccount(
   origin: string,
   state: PulseSnapState,
+  network: string,
   curve: 'ECDSA_SECP256K1' | 'ED25519',
   evmAddress: string,
 ): Promise<any> {
   let result = {} as KeyStore;
   let connectedAddress = '';
   for (const addr of Object.keys(state.accountState)) {
-    const { keyStore } = state.accountState[addr];
+    if (state.accountState[addr][network]) {
+      const { keyStore } = state.accountState[addr][network];
 
-    if (evmAddress === addr) {
-      connectedAddress = addr;
-      result = keyStore;
-      break;
-    }
-
-    if (evmAddress === keyStore.address) {
-      connectedAddress = addr;
-      result = keyStore;
-      break;
+      if (evmAddress === keyStore.address) {
+        connectedAddress = addr;
+        result = keyStore;
+        break;
+      }
     }
   }
 
@@ -203,7 +220,8 @@ async function connectEVMAccount(
 
     try {
       const wallet: Wallet = new ethers.Wallet(privateKey);
-      if (evmAddress !== wallet.address) {
+      const walletAddress = ensure0xPrefix(wallet.address);
+      if (evmAddress !== walletAddress) {
         console.error(
           `The private key you passed was invalid for the EVM address '${evmAddress}'. Please try again.`,
         );
@@ -214,8 +232,8 @@ async function connectEVMAccount(
       result.curve = curve;
       result.privateKey = privateKey;
       result.publicKey = wallet.signingKey.publicKey;
-      result.address = ensure0xPrefix(wallet.address);
-      connectedAddress = ensure0xPrefix(wallet.address);
+      result.address = walletAddress;
+      connectedAddress = walletAddress;
     } catch (error: any) {
       console.error(
         'Error while trying to retrieve the private key. Please try again.',
@@ -251,11 +269,13 @@ async function connectHederaAccount(
   let result = {} as KeyStore;
   let connectedAddress = '';
   for (const addr of Object.keys(state.accountState)) {
-    const { keyStore } = state.accountState[addr];
-    if (keyStore.hederaAccountId === accountId) {
-      connectedAddress = addr;
-      result = keyStore;
-      break;
+    if (state.accountState[addr][network]) {
+      const { keyStore } = state.accountState[addr][network];
+      if (keyStore.hederaAccountId === accountId) {
+        connectedAddress = addr;
+        result = keyStore;
+        break;
+      }
     }
   }
 
@@ -331,20 +351,17 @@ async function connectHederaAccount(
           content: await generateCommonPanel(origin, [
             heading('Hedera Account Status'),
             text(
-              `The private key you passed is not associated with the Hedera account '${accountId}'`,
+              `The private key you passed is not associated with the Hedera account '${accountId}' on '${network}' that uses the elliptic curve '${curve}'`,
             ),
-            divider(),
-            text(`EVM address: ${result.address}`),
-            divider(),
           ]),
         };
         await snapDialog(dialogParamsForHederaAccountId);
 
         console.error(
-          `The private key you passed is not associated with the Hedera account '${accountId}'`,
+          `The private key you passed is not associated with the Hedera account '${accountId}' on '${network}' that uses the elliptic curve '${curve}'`,
         );
         throw new Error(
-          `The private key you passed is not associated with the Hedera account '${accountId}'`,
+          `The private key you passed is not associated with the Hedera account '${accountId}' on '${network}' that uses the elliptic curve '${curve}'`,
         );
       }
     } catch (error: any) {
@@ -371,7 +388,6 @@ async function connectHederaAccount(
  * @param network - Hedera network.
  * @param connectedAddress - Currently connected EVm address.
  * @param keyStore - Keystore for private, public keys and EVM address.
- * @param isExternalAccount - Whether this is a metamask or a non-metamask account.
  */
 export async function importMetaMaskAccount(
   origin: string,
@@ -379,44 +395,10 @@ export async function importMetaMaskAccount(
   network: string,
   connectedAddress: string,
   keyStore: KeyStore,
-  isExternalAccount: boolean,
 ): Promise<void> {
-  let curve = '';
-  let privateKey = '';
-  let publicKey = '';
-  let address = '';
-  let hederaAccountId = '';
+  const { curve, privateKey, publicKey, address } = keyStore;
+  let { hederaAccountId } = keyStore;
   let idOrAliasOrEvmAddress = '';
-
-  if (isExternalAccount) {
-    curve = keyStore.curve;
-    privateKey = keyStore.privateKey;
-    publicKey = keyStore.publicKey;
-    address = keyStore.address;
-    hederaAccountId = keyStore.hederaAccountId;
-  } else {
-    const { keyStore: ksInner } = state.accountState[connectedAddress];
-    curve = ksInner.curve;
-    privateKey = ksInner.privateKey;
-    publicKey = ksInner.publicKey;
-    address = ksInner.address;
-
-    if (_.isEmpty(privateKey)) {
-      // Generate a new wallet according to the Hedera Pulse's entrophy combined with the currently connected EVM address
-      const res = await generateWallet(connectedAddress);
-      if (!res) {
-        console.log('Failed to generate snap wallet for DID operations');
-        throw new Error('Failed to generate snap wallet for DID operations');
-      }
-      curve = 'ECDSA_SECP256K1';
-      privateKey = res.privateKey;
-      publicKey = res.publicKey;
-      address = res.address;
-    }
-    hederaAccountId = await getHederaAccountIdIfExists(state, address);
-  }
-
-  address = address.toLowerCase();
 
   if (_.isEmpty(hederaAccountId)) {
     idOrAliasOrEvmAddress = address;
@@ -424,11 +406,12 @@ export async function importMetaMaskAccount(
     idOrAliasOrEvmAddress = hederaAccountId;
   }
 
-  let { balance } = state.accountState[connectedAddress].accountInfo;
+  let { balance } = state.accountState[connectedAddress][network].accountInfo;
   if (
     _.isEmpty(hederaAccountId) ||
-    _.isEmpty(state.accountState[connectedAddress].accountInfo)
+    _.isEmpty(state.accountState[connectedAddress][network].accountInfo)
   ) {
+    console.log('Retrieving account info from Hedera Mirror node');
     const hederaService = new HederaServiceImpl(network);
     const accountInfo: MirrorAccountInfo =
       await hederaService.getMirrorAccountInfo(idOrAliasOrEvmAddress);
@@ -480,7 +463,7 @@ export async function importMetaMaskAccount(
       } as AccountBalance;
 
       // eslint-disable-next-line require-atomic-updates
-      state.accountState[connectedAddress].accountInfo = {
+      state.accountState[connectedAddress][network].accountInfo = {
         alias: accountInfo.alias,
         createdTime: new Date(
           parseFloat(accountInfo.created_timestamp) * 1000,
@@ -528,8 +511,8 @@ export async function importMetaMaskAccount(
   } as Account;
 
   // eslint-disable-next-line require-atomic-updates
-  state.accountState[connectedAddress].keyStore = {
-    curve: curve as 'ECDSA_SECP256K1' | 'ED25519',
+  state.accountState[connectedAddress][network].keyStore = {
+    curve,
     privateKey,
     publicKey,
     address,

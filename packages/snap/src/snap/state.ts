@@ -69,14 +69,20 @@ export async function initSnapState(): Promise<PulseSnapState> {
  * Function that creates an empty IdentitySnapState object in the Identity Snap state for the provided address.
  *
  * @param state - PulseSnapState.
+ * @param network - Hedera network.
  * @param evmAddress - The account address.
  */
 export async function initAccountState(
   state: PulseSnapState,
+  network: string,
   evmAddress: string,
 ): Promise<void> {
-  state.currentAccount = { metamaskAddress: evmAddress } as Account;
-  state.accountState[evmAddress] = getEmptyAccountState();
+  state.currentAccount = { hederaEvmAddress: evmAddress } as Account;
+  if (_.isEmpty(state.accountState[evmAddress])) {
+    state.accountState[evmAddress] = {};
+  }
+  state.accountState[evmAddress][network] = getEmptyAccountState();
+
   await updateSnapState(state);
 }
 
@@ -84,18 +90,22 @@ export async function initAccountState(
  * Check if Hedera account was imported.
  *
  * @param state - PulseSnapState.
+ * @param network - Hedera network.
  * @param evmAddress - Ethereum address.
  * @returns Result.
  */
 export async function getHederaAccountIdIfExists(
   state: PulseSnapState,
+  network: string,
   evmAddress: string,
 ): Promise<string> {
   let result = '';
   for (const address of Object.keys(state.accountState)) {
-    const { keyStore } = state.accountState[address];
-    if (keyStore.address === evmAddress) {
-      result = keyStore.hederaAccountId;
+    if (state.accountState[address][network]) {
+      const { keyStore } = state.accountState[address][network];
+      if (keyStore.address === evmAddress) {
+        result = keyStore.hederaAccountId;
+      }
     }
   }
   return result;

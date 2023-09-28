@@ -29,7 +29,7 @@ export async function transferCrypto(
     maxFee = null,
   } = transferCryptoParams;
 
-  const { metamaskAddress, hederaAccountId, network } = state.currentAccount;
+  const { hederaAccountId, hederaEvmAddress, network } = state.currentAccount;
 
   const panelToShow = [
     text(`Origin: ${origin}`),
@@ -61,14 +61,14 @@ export async function transferCrypto(
   if (await snapDialog(dialogParams)) {
     try {
       let currentBalance =
-        state.accountState[metamaskAddress].accountInfo.balance;
+        state.accountState[hederaEvmAddress][network].accountInfo.balance;
       if (!currentBalance) {
         currentBalance = {} as AccountBalance;
       }
 
       const hederaClient = await createHederaClient(
-        state.accountState[metamaskAddress].keyStore.curve,
-        state.accountState[metamaskAddress].keyStore.privateKey,
+        state.accountState[hederaEvmAddress][network].keyStore.curve,
+        state.accountState[hederaEvmAddress][network].keyStore.privateKey,
         hederaAccountId,
         network,
       );
