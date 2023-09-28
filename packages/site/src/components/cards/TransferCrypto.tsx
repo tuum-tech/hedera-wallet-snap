@@ -67,12 +67,12 @@ const TransferCrypto: FC<Props> = ({
         externalAccountParams,
       );
 
-      const { currentAccount, record } = response;
+      const { currentAccount, receipt } = response;
       setAccountInfo(currentAccount);
-      console.log('Record: ', JSON.stringify(record, null, 4));
+      console.log('Receipt: ', JSON.stringify(receipt, null, 4));
       showModal({
-        title: 'Your transaction record',
-        content: JSON.stringify(record),
+        title: 'Your transaction receipt',
+        content: JSON.stringify(receipt),
       });
     } catch (error: any) {
       console.error(error);

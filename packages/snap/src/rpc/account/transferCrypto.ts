@@ -3,7 +3,7 @@ import _ from 'lodash';
 import {
   AccountBalance,
   SimpleTransfer,
-  TxRecord,
+  TxReceipt,
 } from '../../services/hedera';
 import { createHederaClient } from '../../snap/account';
 import { snapDialog } from '../../snap/dialog';
@@ -20,7 +20,7 @@ import { PulseSnapParams, SnapDialogParams } from '../../types/state';
 export async function transferCrypto(
   pulseSnapParams: PulseSnapParams,
   transferCryptoParams: TransferCryptoRequestParams,
-): Promise<TxRecord> {
+): Promise<TxReceipt> {
   const { origin, state } = pulseSnapParams;
 
   const {

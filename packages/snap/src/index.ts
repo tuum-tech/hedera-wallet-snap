@@ -103,7 +103,7 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
       isValidTransferCryptoParams(request.params);
       return {
         currentAccount: state.currentAccount,
-        record: await transferCrypto(pulseSnapParams, request.params),
+        receipt: await transferCrypto(pulseSnapParams, request.params),
       };
     }
     default:

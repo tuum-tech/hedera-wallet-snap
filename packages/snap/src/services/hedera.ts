@@ -142,7 +142,7 @@ export type SimpleHederaClient = {
     memo: string | null;
     maxFee: number | null; // tinybars
     onBeforeConfirm?: () => void;
-  }): Promise<TxRecord>;
+  }): Promise<TxReceipt>;
 };
 
 export type MirrorStakingInfo = {

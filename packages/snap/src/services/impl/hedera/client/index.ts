@@ -10,6 +10,7 @@ import {
   AccountBalance,
   SimpleHederaClient,
   SimpleTransfer,
+  TxReceipt,
   TxRecord,
 } from '../../../hedera';
 import { getAccountBalance } from './getAccountBalance';
@@ -50,13 +51,13 @@ export class SimpleHederaClientImpl implements SimpleHederaClient {
     return getAccountBalance(this._client);
   }
 
-  transferCrypto(options: {
+  async transferCrypto(options: {
     currentBalance: AccountBalance;
     transfers: SimpleTransfer[];
     memo: string | null;
     maxFee: number | null;
     onBeforeConfirm?: () => void;
-  }): Promise<TxRecord> {
+  }): Promise<TxReceipt> {
     return transferCrypto(this._client, options);
   }
 }

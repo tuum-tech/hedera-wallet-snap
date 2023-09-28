@@ -334,7 +334,7 @@ async function connectHederaAccount(
               `The private key you passed is not associated with the Hedera account '${accountId}'`,
             ),
             divider(),
-            text(`Public Key: ${publicKey}`),
+            text(`EVM address: ${result.address}`),
             divider(),
           ]),
         };
@@ -502,7 +502,6 @@ export async function importMetaMaskAccount(
             `This Hedera account is not yet active on ${network}. Please activate it by sending some HBAR to this account.`,
           ),
           divider(),
-          text(`Public Key: ${publicKey}`),
           text(`EVM Address: ${address}`),
           divider(),
         ]),
@@ -511,10 +510,10 @@ export async function importMetaMaskAccount(
 
       // TODO: Maybe offer the user an "Activate" option that will charge them "x" amount of ETH
       console.error(
-        `This Hedera account is not yet active. Please activate it by sending some HBAR to this account. Public Key: ${publicKey}, EVM Address: ${address}`,
+        `This Hedera account is not yet active. Please activate it by sending some HBAR to this account. EVM Address: ${address}`,
       );
       throw new Error(
-        `This Hedera account is not yet active. Please activate it by sending some HBAR to this account. Public Key: ${publicKey}, EVM Address: ${address}`,
+        `This Hedera account is not yet active. Please activate it by sending some HBAR to this account. EVM Address: ${address}`,
       );
     }
   }

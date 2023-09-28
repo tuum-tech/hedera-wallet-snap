@@ -1,6 +1,13 @@
-import { Hbar, TransferTransaction, type Client } from '@hashgraph/sdk';
+import {
+  AccountCreateTransaction,
+  Hbar,
+  PublicKey,
+  TransactionReceipt,
+  TransferTransaction,
+  type Client,
+} from '@hashgraph/sdk';
 
-import { ethers } from 'ethers';
+import { isValidEthereumPublicKey } from '../../../../utils/keyPair';
 import {
   AccountBalance,
   SimpleTransfer,
@@ -19,7 +26,7 @@ import {
  * @param options.maxFee - Max fee to use in the transfer.
  * @param options.onBeforeConfirm - Function to execute before confirmation.
  */
-export async function transferCrypto(
+export async function createAccount(
   client: Client,
   options: {
     currentBalance: AccountBalance;
@@ -29,21 +36,37 @@ export async function transferCrypto(
     onBeforeConfirm?: () => void;
   },
 ): Promise<TxReceipt> {
-  const maxFee = options.maxFee ? new Hbar(options.maxFee) : new Hbar(1);
+  const maxFee = options.maxFee ? new Hbar(options.maxFee) : new Hbar(10);
 
   const transaction = new TransferTransaction()
     .setTransactionMemo(options.memo ?? '')
     .setMaxTransactionFee(maxFee);
 
+  let newAccountCreated = false;
+  const receipts: TransactionReceipt[] = [];
   let outgoingHbarAmount = 0;
   for (const transfer of options.transfers) {
     if (transfer.asset === 'HBAR') {
-      if (ethers.isAddress(transfer.to)) {
-        transfer.to = `0.0.${transfer.to.slice(2)}`;
-      }
+      if (isValidEthereumPublicKey(transfer.to)) {
+        const tx = new AccountCreateTransaction()
+          .setInitialBalance(Hbar.fromTinybars(transfer.amount))
+          .setMaxTransactionFee(maxFee)
+          .setKey(PublicKey.fromString(transfer.to))
+          .freezeWith(client);
 
-      transaction.addHbarTransfer(transfer.to, transfer.amount);
-      outgoingHbarAmount += -transfer.amount;
+        const txResponse = await tx.execute(client);
+        console.log('TxResponse: ', JSON.stringify(txResponse, null, 4));
+
+        options.onBeforeConfirm?.();
+
+        const receipt = await txResponse.getReceipt(client);
+
+        receipts.push(receipt);
+        newAccountCreated = true;
+      } else {
+        transaction.addHbarTransfer(transfer.to, transfer.amount);
+        outgoingHbarAmount += -transfer.amount;
+      }
     } else {
       const multiplier = Math.pow(
         10,
@@ -74,13 +97,20 @@ export async function transferCrypto(
     );
   }
 
-  transaction.freezeWith(client);
+  let receipt: TransactionReceipt;
+  if (newAccountCreated) {
+    receipt = receipts[0];
+  } else {
+    transaction.freezeWith(client);
 
-  const txResponse = await transaction.execute(client);
+    const txResponse = await transaction.execute(client);
 
-  options.onBeforeConfirm?.();
+    options.onBeforeConfirm?.();
 
-  const receipt = await txResponse.getReceipt(client);
+    receipt = await txResponse.getReceipt(client);
+  }
+
+  console.log('receipt: ', JSON.stringify(receipt, null, 4));
 
   const uint8ArrayToHex = (data: Uint8Array | null | undefined) => {
     if (!data) {
