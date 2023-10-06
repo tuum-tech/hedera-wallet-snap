@@ -1,14 +1,14 @@
 {
   "name": "@tuum-tech/hedera-pulse",
   "version": "0.1.0",
-  "private": true,
-  "description": "Native Hedera Wallet Snap that any other apps can interact with, thereby turning Metamask into a native Hedera wallet without relying on Hedera JSON-RPC Relay.",
+  "description": "Hedera Pulse Snap unlocks wallet functionality via Metamask that any other apps can interact with, thereby turning Metamask into a native Hedera wallet without relying on Hedera JSON-RPC Relay.",
   "keywords": [
     "MetaMask",
     "Snaps",
     "Hedera Hashgraph",
     "HBAR"
   ],
+  "homepage": "https://github.com/tuum-tech/hedera-pulse",
   "repository": {
     "type": "git",
     "url": "https://github.com/tuum-tech/hedera-pulse.git"
@@ -19,11 +19,14 @@
     "email": "contact@tuum.tech",
     "url": "https://tuum.tech"
   },
-  "main": "src/index.ts",
+  "main": "dist/snap.js",
   "files": [
-    "dist/",
-    "images/",
-    "snap.manifest.json"
+    "dist/snap.js",
+    "snap.manifest.json",
+    "package.json",
+    "images",
+    "README.md",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "prebuild": "yarn run clean",

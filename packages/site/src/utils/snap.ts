@@ -1,5 +1,4 @@
 import { MetaMaskInpageProvider } from '@metamask/providers';
-import BigNumber from 'bignumber.js';
 import { defaultSnapOrigin } from '../config';
 import { ExternalAccountParams, GetSnapsResponse, Snap } from '../types';
 import { SimpleTransfer } from '../types/snap';
@@ -147,7 +146,7 @@ export const transferCrypto = async (
   mirrorNodeUrl: string,
   transfers: SimpleTransfer[],
   memo?: string,
-  maxFee?: BigNumber,
+  maxFee?: number,
   externalAccountparams?: ExternalAccountParams,
 ) => {
   return await window.ethereum.request({

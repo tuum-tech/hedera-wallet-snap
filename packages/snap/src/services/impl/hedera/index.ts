@@ -2,6 +2,7 @@ import {
   AccountId,
   Client,
   Hbar,
+  HbarUnit,
   PrivateKey,
   Status,
   StatusError,
@@ -100,7 +101,7 @@ export class HederaServiceImpl implements HederaService {
     }
 
     // this sets the fee paid by the client for the transaction
-    client.setDefaultMaxTransactionFee(new Hbar(1));
+    client.setDefaultMaxTransactionFee(Hbar.from(500000, HbarUnit.Tinybar));
 
     return new SimpleHederaClientImpl(client, privateKey);
   }
@@ -159,9 +160,11 @@ export class HederaServiceImpl implements HederaService {
     let result = {} as MirrorAccountInfo;
     const url = `${this.mirrorNodeUrl}/api/v1/accounts/${idOrAliasOrEvmAddress}`;
     const response: FetchResponse = await fetchDataFromUrl(url);
-    if (response.success) {
-      result = response.data as MirrorAccountInfo;
+    if (!response.success) {
+      return {} as AccountInfo;
     }
+
+    result = response.data as MirrorAccountInfo;
 
     const hbars = result.balance.balance / 1e8;
     const tokens: Record<string, TokenBalance> = {};

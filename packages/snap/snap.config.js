@@ -2,7 +2,7 @@
 module.exports = {
   cliOptions: {
     src: './dist/snap.js',
-    port: 8080,
+    port: 9001,
     transpilationMode: 'localOnly',
   },
 };

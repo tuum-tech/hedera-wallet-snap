@@ -1,7 +1,6 @@
 import { Hbar, TransferTransaction, type Client } from '@hashgraph/sdk';
 
 import { ethers } from 'ethers';
-import { TransferCryptoRequestParams } from '../../../../../../site/src/types/snap';
 import {
   AccountBalance,
   SimpleTransfer,

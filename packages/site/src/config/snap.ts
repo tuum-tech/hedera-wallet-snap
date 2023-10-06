@@ -7,5 +7,5 @@
  * there. Running `yarn build` will automatically use the production environment variables.
  */
 export const defaultSnapOrigin =
-  process.env.SNAP_ORIGIN ?? `local:http://localhost:8080`;
+  process.env.SNAP_ORIGIN ?? `local:http://localhost:9001`;
 // export const defaultSnapId = `npm:@tuum-tech/hedera-pulse`;

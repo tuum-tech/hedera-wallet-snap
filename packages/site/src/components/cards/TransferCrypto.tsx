@@ -82,7 +82,7 @@ const TransferCrypto: FC<Props> = ({
           <>
             <ExternalAccount ref={externalAccountRef} />
             <label>
-              Enter an account Id or an EVM address
+              Enter an account Id or an EVM address to send Hbar to
               <input
                 type="text"
                 style={{ width: '100%' }}

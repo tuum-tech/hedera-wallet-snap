@@ -1,13 +1,13 @@
 {
   "version": "0.1.0",
-  "description": "Native Hedera Wallet Snap that any other apps can interact with, thereby turning Metamask into a native Hedera wallet without relying on Hedera JSON-RPC Relay.",
+  "description": "Hedera Pulse Snap unlocks wallet functionality via Metamask that any other apps can interact with, thereby turning Metamask into a native Hedera wallet without relying on Hedera JSON-RPC Relay.",
   "proposedName": "Hedera Pulse",
   "repository": {
     "type": "git",
     "url": "https://github.com/tuum-tech/hedera-pulse.git"
   },
   "source": {
-    "shasum": "RbrLNX82IPT/uPvT8D7VjrbQzLlyym0aEw9wOVmvCtU=",
+    "shasum": "hRbtF1rQrxWlaEWViwDEJa6cS1wOOIgZP7ZnLno0W7I=",
     "location": {
       "npm": {
         "filePath": "dist/snap.js",
@@ -19,14 +19,14 @@
   },
   "initialPermissions": {
     "snap_dialog": {},
-    "endowment:rpc": {
-      "dapps": true,
-      "snaps": true
-    },
     "snap_manageState": {},
     "snap_getEntropy": {},
     "endowment:ethereum-provider": {},
-    "endowment:network-access": {}
+    "endowment:network-access": {},
+    "endowment:rpc": {
+      "dapps": true,
+      "snaps": true
+    }
   },
   "manifestVersion": "0.1"
 }
