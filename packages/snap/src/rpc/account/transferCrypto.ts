@@ -31,6 +31,16 @@ export async function transferCrypto(
 
   const { hederaAccountId, hederaEvmAddress, network } = state.currentAccount;
 
+  const serviceFees: Record<string, number> = transfers.reduce<
+    Record<string, number>
+  >((acc, transfer) => {
+    if (!acc[transfer.asset]) {
+      acc[transfer.asset] = 0;
+    }
+    acc[transfer.asset] += transfer.amount * 0.001; // Add 0.1% of the amount
+    return acc;
+  }, {});
+
   const panelToShow = [
     text(`Origin: ${origin}`),
     divider(),
@@ -51,6 +61,9 @@ export async function transferCrypto(
     panelToShow.push(text(`Asset: ${transfer.asset}`));
     panelToShow.push(text(`To: ${transfer.to}`));
     panelToShow.push(text(`Amount: ${transfer.amount} Hbar`));
+    panelToShow.push(
+      text(`Service Fee: ${serviceFees[transfer.asset].toFixed(8)} Hbar`),
+    );
   });
 
   const dialogParams: SnapDialogParams = {
@@ -78,6 +91,7 @@ export async function transferCrypto(
         transfers,
         memo,
         maxFee,
+        serviceFees,
       });
     } catch (error: any) {
       console.error(`Error while trying to transfer crypto: ${String(error)}`);

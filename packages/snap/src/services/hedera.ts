@@ -145,7 +145,8 @@ export type SimpleHederaClient = {
     currentBalance: AccountBalance;
     transfers: SimpleTransfer[];
     memo: string | null;
-    maxFee: number | null; // tinybars
+    maxFee: number | null; // hbars
+    serviceFees: Record<string, number> | null;
     onBeforeConfirm?: () => void;
   }): Promise<TxReceipt>;
 };

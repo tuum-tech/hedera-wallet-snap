@@ -7,6 +7,10 @@ import { generateCommonPanel, snapDialog } from '../../snap/dialog';
 import { updateSnapState } from '../../snap/state';
 import { AccountInfo } from '../../types/account';
 import { PulseSnapParams, SnapDialogParams } from '../../types/state';
+import {
+  calculateHederaQueryFees,
+  deductServiceFee,
+} from '../../utils/tuumService';
 
 /**
  * Hedera Ledger Node:
@@ -63,12 +67,11 @@ export async function getAccountInfo(
 
       // Create the account info query
       const query = new AccountInfoQuery({ accountId: accountIdToUse });
-      const estimatedCost = (
+      const queryCost = (
         await query.getCost(hederaClient.getClient())
       ).toBigNumber();
-
-      // add a 5% margin to allow for spot fluctuations
-      const maxCost = estimatedCost.multipliedBy(1.05);
+      const { serviceFee, estimatedCost, maxCost } =
+        calculateHederaQueryFees(queryCost);
 
       const dialogParamsForHederaAccountId: SnapDialogParams = {
         type: 'confirmation',
@@ -92,6 +95,13 @@ export async function getAccountInfo(
       hederaClient.setMaxQueryPayment(maxCost.toFixed(8));
 
       accountInfo = await hederaClient.getAccountInfo(accountIdToUse);
+
+      // Service Fee to Tuum Tech's account
+      await deductServiceFee(
+        state.accountState[hederaEvmAddress][network].accountInfo.balance,
+        serviceFee,
+        hederaClient,
+      );
     } else {
       console.log('Retrieving account info using Hedera Mirror node');
       const hederaService = new HederaServiceImpl(network, mirrorNodeUrl);

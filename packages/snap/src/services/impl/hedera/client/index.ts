@@ -66,6 +66,7 @@ export class SimpleHederaClientImpl implements SimpleHederaClient {
     transfers: SimpleTransfer[];
     memo: string | null;
     maxFee: number | null;
+    serviceFees: Record<string, number> | null;
     onBeforeConfirm?: () => void;
   }): Promise<TxReceipt> {
     return transferCrypto(this._client, options);

@@ -1,6 +1,7 @@
 import { Hbar, TransferTransaction, type Client } from '@hashgraph/sdk';
 
 import { ethers } from 'ethers';
+import { TUUMACCOUNTID } from '../../../../types/constants';
 import {
   AccountBalance,
   SimpleTransfer,
@@ -17,6 +18,7 @@ import {
  * @param options.transfers - The list of transfers to take place.
  * @param options.memo - Memo to include in the transfer.
  * @param options.maxFee - Max fee to use in the transfer.
+ * @param options.serviceFees - Service Fees.
  * @param options.onBeforeConfirm - Function to execute before confirmation.
  */
 export async function transferCrypto(
@@ -26,6 +28,7 @@ export async function transferCrypto(
     transfers: SimpleTransfer[];
     memo: string | null;
     maxFee: number | null; // hbar
+    serviceFees: Record<string, number> | null;
     onBeforeConfirm?: () => void;
   },
 ): Promise<TxReceipt> {
@@ -46,24 +49,44 @@ export async function transferCrypto(
 
       transaction.addHbarTransfer(transfer.to, transfer.amount);
       outgoingHbarAmount += -transfer.amount;
+
+      // Service Fee to Tuum Tech's account
+      if (options.serviceFees) {
+        transaction.addHbarTransfer(
+          TUUMACCOUNTID,
+          options.serviceFees[transfer.asset],
+        );
+        outgoingHbarAmount += -options.serviceFees[transfer.asset];
+      }
     } else {
       const multiplier = Math.pow(
         10,
         options.currentBalance.tokens[transfer.asset].decimals,
       );
-      const amount = transfer.amount * multiplier;
 
       transaction.addTokenTransfer(
         transfer.asset,
         transfer.to,
-        transfer.amount,
+        transfer.amount * multiplier,
       );
+
+      let amountToReduce = -(transfer.amount * multiplier);
+
+      // Service Fee to Tuum Tech's account
+      if (options.serviceFees) {
+        transaction.addTokenTransfer(
+          transfer.asset,
+          TUUMACCOUNTID,
+          options.serviceFees[transfer.asset] * multiplier,
+        );
+        amountToReduce += -(options.serviceFees[transfer.asset] * multiplier);
+      }
 
       transaction.addTokenTransfer(
         transfer.asset,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         client.operatorAccountId!,
-        -amount,
+        amountToReduce,
       );
     }
   }
