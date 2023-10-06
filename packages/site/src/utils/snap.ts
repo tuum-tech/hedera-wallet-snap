@@ -83,14 +83,14 @@ export const getSnap = async (version?: string): Promise<Snap | undefined> => {
  * Invoke the "hello" method from the snap.
  */
 
-export const sendHello = async (network: string) => {
+export const sendHello = async (network: string, mirrorNodeUrl: string) => {
   return await window.ethereum.request({
     method: 'wallet_invokeSnap',
     params: {
       snapId: defaultSnapOrigin,
       request: {
         method: 'hello',
-        params: { network },
+        params: { network, mirrorNodeUrl },
       },
     },
   });
@@ -102,6 +102,7 @@ export const sendHello = async (network: string) => {
 
 export const getAccountInfo = async (
   network: string,
+  mirrorNodeUrl: string,
   accountId?: string,
   externalAccountparams?: ExternalAccountParams,
 ) => {
@@ -111,7 +112,7 @@ export const getAccountInfo = async (
       snapId: defaultSnapOrigin,
       request: {
         method: 'getAccountInfo',
-        params: { network, accountId, ...externalAccountparams },
+        params: { network, mirrorNodeUrl, accountId, ...externalAccountparams },
       },
     },
   });
@@ -143,6 +144,7 @@ export const getAccountBalance = async (
 
 export const transferCrypto = async (
   network: string,
+  mirrorNodeUrl: string,
   transfers: SimpleTransfer[],
   memo?: string,
   maxFee?: BigNumber,
@@ -154,7 +156,14 @@ export const transferCrypto = async (
       snapId: defaultSnapOrigin,
       request: {
         method: 'transferCrypto',
-        params: { network, transfers, memo, maxFee, ...externalAccountparams },
+        params: {
+          network,
+          mirrorNodeUrl,
+          transfers,
+          memo,
+          maxFee,
+          ...externalAccountparams,
+        },
       },
     },
   });

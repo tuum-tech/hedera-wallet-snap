@@ -10,15 +10,20 @@ import {
 import BigNumber from 'bignumber.js';
 import _ from 'lodash';
 
+import { StakingInfoJson } from '@hashgraph/sdk/lib/account/AccountInfo';
+import { AccountInfo } from 'src/types/account';
 import { Wallet } from '../../../domain/wallet/abstract';
 import { PrivateKeySoftwareWallet } from '../../../domain/wallet/software-private-key';
 import { FetchResponse, fetchDataFromUrl } from '../../../utils/fetch';
 import {
+  AccountBalance,
   HederaService,
   MirrorAccountInfo,
   MirrorStakingInfo,
   MirrorTokenInfo,
   SimpleHederaClient,
+  Token,
+  TokenBalance,
 } from '../../hedera';
 import { SimpleHederaClientImpl } from './client';
 
@@ -27,20 +32,24 @@ export class HederaServiceImpl implements HederaService {
   private readonly network: string;
 
   // eslint-disable-next-line no-restricted-syntax
-  private readonly urlBase: string;
+  public readonly mirrorNodeUrl: string;
 
-  constructor(network: string) {
+  constructor(network: string, mirrorNodeUrl?: string) {
     this.network = network;
     // eslint-disable-next-line default-case
     switch (network) {
       case 'testnet':
-        this.urlBase = 'testnet';
+        this.mirrorNodeUrl = 'https://testnet.mirrornode.hedera.com';
         break;
       case 'previewnet':
-        this.urlBase = 'previewnet';
+        this.mirrorNodeUrl = 'https://previewnet.mirrornode.hedera.com';
         break;
       default:
-        this.urlBase = 'mainnet-public';
+        this.mirrorNodeUrl = 'https://mainnet-public.mirrornode.hedera.com';
+    }
+
+    if (!_.isEmpty(mirrorNodeUrl)) {
+      this.mirrorNodeUrl = mirrorNodeUrl as string;
     }
   }
 
@@ -90,13 +99,16 @@ export class HederaServiceImpl implements HederaService {
       return null;
     }
 
+    // this sets the fee paid by the client for the transaction
+    client.setDefaultMaxTransactionFee(new Hbar(1));
+
     return new SimpleHederaClientImpl(client, privateKey);
   }
 
   async getNodeStakingInfo(): Promise<MirrorStakingInfo[]> {
     const result: MirrorStakingInfo[] = [];
 
-    const url = `https://${this.urlBase}.mirrornode.hedera.com/api/v1/network/nodes?order=asc&limit=25`;
+    const url = `${this.mirrorNodeUrl}/api/v1/network/nodes?order=asc&limit=25`;
     const response: FetchResponse = await fetchDataFromUrl(url);
     if (response.success) {
       for (const node of response.data.nodes) {
@@ -115,7 +127,7 @@ export class HederaServiceImpl implements HederaService {
       }
 
       if (response.data.links.next) {
-        const secondUrl = `https://${this.urlBase}.mirrornode.hedera.com${
+        const secondUrl = `${this.mirrorNodeUrl}${
           response.data.links.next as string
         }`;
         const secondResponse: FetchResponse = await fetchDataFromUrl(secondUrl);
@@ -143,19 +155,77 @@ export class HederaServiceImpl implements HederaService {
 
   async getMirrorAccountInfo(
     idOrAliasOrEvmAddress: string,
-  ): Promise<MirrorAccountInfo> {
+  ): Promise<AccountInfo> {
     let result = {} as MirrorAccountInfo;
-    const url = `https://${this.urlBase}.mirrornode.hedera.com/api/v1/accounts/${idOrAliasOrEvmAddress}`;
+    const url = `${this.mirrorNodeUrl}/api/v1/accounts/${idOrAliasOrEvmAddress}`;
     const response: FetchResponse = await fetchDataFromUrl(url);
     if (response.success) {
-      result = response.data;
+      result = response.data as MirrorAccountInfo;
     }
-    return result;
+
+    const hbars = result.balance.balance / 1e8;
+    const tokens: Record<string, TokenBalance> = {};
+    // Use map to create an array of promises
+    const tokenPromises = result.balance.tokens.map(async (token: Token) => {
+      const tokenId = token.token_id;
+      const tokenInfo: MirrorTokenInfo = await this.getTokenById(tokenId);
+      tokens[tokenId] = {
+        balance: token.balance / Math.pow(10, Number(tokenInfo.decimals)),
+        decimals: Number(tokenInfo.decimals),
+        tokenId,
+        name: tokenInfo.name,
+        symbol: tokenInfo.symbol,
+        tokenType: tokenInfo.type,
+        supplyType: tokenInfo.supply_type,
+        totalSupply: tokenInfo.total_supply,
+        maxSupply: tokenInfo.max_supply,
+      } as TokenBalance;
+    });
+
+    // Wait for all promises to resolve
+    await Promise.all(tokenPromises);
+
+    return {
+      accountId: result.account,
+      alias: result.alias,
+      createdTime: new Date(
+        parseFloat(result.created_timestamp) * 1000,
+      ).toISOString(),
+      expirationTime: new Date(
+        parseFloat(result.expiry_timestamp) * 1000,
+      ).toISOString(),
+      memo: result.memo,
+      evmAddress: result.evm_address,
+      key: {
+        type: result.key._type,
+        key: result.key.key,
+      },
+      balance: {
+        hbars,
+        timestamp: new Date(
+          parseFloat(result.balance.timestamp) * 1000,
+        ).toISOString(),
+        tokens,
+      } as AccountBalance,
+      autoRenewPeriod: String(result.auto_renew_period),
+      ethereumNonce: String(result.ethereum_nonce),
+      isDeleted: result.deleted,
+      stakingInfo: {
+        declineStakingReward: result.decline_reward,
+        stakePeriodStart: result.stake_period_start
+          ? new Date(parseFloat(result.stake_period_start) * 1000).toISOString()
+          : '',
+        pendingReward: String(result.pending_reward),
+        stakedToMe: '0', // TODO
+        stakedAccountId: result.staked_account_id ?? '',
+        stakedNodeId: result.staked_node_id ?? '',
+      } as StakingInfoJson,
+    } as AccountInfo;
   }
 
   async getTokenById(tokenId: string): Promise<MirrorTokenInfo> {
     let result = {} as MirrorTokenInfo;
-    const url = `https://${this.urlBase}.mirrornode.hedera.com/api/v1/tokens/${tokenId}`;
+    const url = `${this.mirrorNodeUrl}/api/v1/tokens/${tokenId}`;
     const response: FetchResponse = await fetchDataFromUrl(url);
     if (response.success) {
       result = response.data;
@@ -236,6 +306,5 @@ export async function getHederaClient(
     console.error('Invalid private key or account Id of the operator');
     return null;
   }
-
   return client;
 }

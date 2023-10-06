@@ -1,5 +1,6 @@
 import type {
   AccountId,
+  Client,
   CustomFee,
   Key,
   PrivateKey,
@@ -9,8 +10,8 @@ import type {
 import { Long } from '@hashgraph/sdk/lib/long';
 import { BigNumber } from 'bignumber.js';
 
-import { AccountInfoJson } from '@hashgraph/sdk/lib/account/AccountInfo';
 import { Wallet } from '../domain/wallet/abstract';
+import { AccountInfo } from '../types/account';
 
 export type SimpleTransfer = {
   // HBAR or Token ID (as string)
@@ -114,14 +115,18 @@ export type HederaService = {
 
   getNodeStakingInfo(): Promise<MirrorStakingInfo[]>;
 
-  getMirrorAccountInfo(
-    idOrAliasOrEvmAddress: string,
-  ): Promise<MirrorAccountInfo>;
+  getMirrorAccountInfo(idOrAliasOrEvmAddress: string): Promise<AccountInfo>;
 
   getTokenById(tokenId: string): Promise<MirrorTokenInfo>;
 };
 
 export type SimpleHederaClient = {
+  // set max fee queries
+  setMaxQueryPayment(cost: any): void;
+
+  // get the associated client
+  getClient(): Client;
+
   // get the associated private key, if available
   getPrivateKey(): PrivateKey | null;
 
@@ -131,7 +136,7 @@ export type SimpleHederaClient = {
   // get the associated account ID
   getAccountId(): AccountId;
 
-  getAccountInfo(accountId: string): Promise<AccountInfoJson>;
+  getAccountInfo(accountId: string): Promise<AccountInfo>;
 
   // returns the account balance in HBARs
   getAccountBalance(): Promise<number>;
@@ -187,7 +192,7 @@ export type MirrorAccountInfo = {
   receiver_sig_required: boolean;
   staked_account_id?: string;
   staked_node_id?: number;
-  stake_period_start?: number;
+  stake_period_start?: string;
   transactions: [];
   links: {
     next: string;

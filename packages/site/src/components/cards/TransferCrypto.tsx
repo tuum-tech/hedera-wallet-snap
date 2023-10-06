@@ -13,10 +13,15 @@ import ExternalAccount, {
 
 type Props = {
   network: string;
+  mirrorNodeUrl: string;
   setAccountInfo: React.Dispatch<React.SetStateAction<Account>>;
 };
 
-const TransferCrypto: FC<Props> = ({ network, setAccountInfo }) => {
+const TransferCrypto: FC<Props> = ({
+  network,
+  mirrorNodeUrl,
+  setAccountInfo,
+}) => {
   const [state, dispatch] = useContext(MetaMaskContext);
   const [loading, setLoading] = useState(false);
   const { showModal } = useModal();
@@ -46,6 +51,7 @@ const TransferCrypto: FC<Props> = ({ network, setAccountInfo }) => {
 
       const response: any = await transferCrypto(
         network,
+        mirrorNodeUrl,
         transfers,
         sendMemo,
         undefined,

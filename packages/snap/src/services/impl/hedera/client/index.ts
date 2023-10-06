@@ -1,17 +1,17 @@
 import {
+  Hbar,
   type AccountId,
   type Client,
   type PrivateKey,
   type PublicKey,
 } from '@hashgraph/sdk';
 
-import { AccountInfoJson } from '@hashgraph/sdk/lib/account/AccountInfo';
+import { AccountInfo } from '../../../../types/account';
 import {
   AccountBalance,
   SimpleHederaClient,
   SimpleTransfer,
   TxReceipt,
-  TxRecord,
 } from '../../../hedera';
 import { getAccountBalance } from './getAccountBalance';
 import { getAccountInfo } from './getAccountInfo';
@@ -29,6 +29,16 @@ export class SimpleHederaClientImpl implements SimpleHederaClient {
     this._privateKey = privateKey;
   }
 
+  setMaxQueryPayment(cost: any): void {
+    const costInHbar = new Hbar(cost);
+    // this sets the fee paid by the client for the query
+    this._client.setMaxQueryPayment(costInHbar);
+  }
+
+  getClient(): Client {
+    return this._client;
+  }
+
   getPrivateKey(): PrivateKey | null {
     return this._privateKey;
   }
@@ -43,7 +53,7 @@ export class SimpleHederaClientImpl implements SimpleHederaClient {
     return this._client.operatorAccountId!;
   }
 
-  async getAccountInfo(accountId: string): Promise<AccountInfoJson> {
+  async getAccountInfo(accountId: string): Promise<AccountInfo> {
     return getAccountInfo(this._client, accountId);
   }
 

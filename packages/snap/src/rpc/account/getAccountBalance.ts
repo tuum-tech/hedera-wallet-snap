@@ -3,7 +3,10 @@ import { updateSnapState } from '../../snap/state';
 import { PulseSnapParams } from '../../types/state';
 
 /**
- * Get balance of an account.
+ * A query that returns the account balance for the specified account.
+ * Requesting an account balance is currently free of charge. Queries do
+ * not change the state of the account or require network consensus. The
+ * information is returned from a single node processing the query.
  *
  * @param pulseSnapParams - Pulse snap params.
  * @returns Account Balance.
@@ -24,12 +27,12 @@ export async function getAccountBalance(
     );
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    state.accountState[hederaEvmAddress][network].accountInfo.balance!.hbars =
+    state.accountState[hederaEvmAddress][network].accountInfo.balance.hbars =
       await hederaClient.getAccountBalance();
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     state.accountState[hederaEvmAddress][
       network
-    ].accountInfo.balance!.timestamp = new Date().toISOString();
+    ].accountInfo.balance.timestamp = new Date().toISOString();
     await updateSnapState(state);
   } catch (error: any) {
     console.error(
@@ -41,5 +44,5 @@ export async function getAccountBalance(
   }
 
   return state.accountState[hederaEvmAddress][network].accountInfo.balance
-    ?.hbars as number;
+    .hbars;
 }

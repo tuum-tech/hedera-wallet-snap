@@ -6932,6 +6932,7 @@ __metadata:
     "@metamask/snaps-webpack-plugin": ^1.0.2
     "@types/jest": ^29.5.0
     "@types/lodash.clonedeep": ^4.5.7
+    "@types/normalize-url": ^4.2.0
     "@typescript-eslint/eslint-plugin": ^5.57.1
     "@typescript-eslint/parser": ^5.57.1
     babel-loader: ^9.1.2
@@ -6951,6 +6952,7 @@ __metadata:
     jest: ^29.5.0
     lodash: ^4.17.21
     lodash.clonedeep: ^4.5.0
+    normalize-url: ^8.0.0
     prettier: ^2.8.7
     prettier-plugin-packagejson: ^2.4.3
     rimraf: ^5.0.0
@@ -7392,6 +7394,15 @@ __metadata:
   version: 2.4.1
   resolution: "@types/normalize-package-data@npm:2.4.1"
   checksum: e87bccbf11f95035c89a132b52b79ce69a1e3652fe55962363063c9c0dae0fe2477ebc585e03a9652adc6f381d24ba5589cc5e51849df4ced3d3e004a7d40ed5
+  languageName: node
+  linkType: hard
+
+"@types/normalize-url@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "@types/normalize-url@npm:4.2.0"
+  dependencies:
+    normalize-url: "*"
+  checksum: 4e19766972f9de6bf8f05f61f30e7f5b914ff05f9c947a17903e45c8d4c5a0ea0b536d39d3797cc5367caf25ebfbda38580cdb11460ec685b130041cf025aa23
   languageName: node
   linkType: hard
 
@@ -18820,6 +18831,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"normalize-url@npm:*, normalize-url@npm:^8.0.0":
+  version: 8.0.0
+  resolution: "normalize-url@npm:8.0.0"
+  checksum: 24c20b75ebfd526d8453084692720b49d111c63c0911f1b7447427829597841eef5a8ba3f6bb93d6654007b991c1f5cd85da2c907800e439e2e2ec6c2abd0fc0
+  languageName: node
+  linkType: hard
+
 "normalize-url@npm:^4.1.0":
   version: 4.5.1
   resolution: "normalize-url@npm:4.5.1"
@@ -18831,13 +18849,6 @@ __metadata:
   version: 6.1.0
   resolution: "normalize-url@npm:6.1.0"
   checksum: 4a4944631173e7d521d6b80e4c85ccaeceb2870f315584fa30121f505a6dfd86439c5e3fdd8cd9e0e291290c41d0c3599f0cb12ab356722ed242584c30348e50
-  languageName: node
-  linkType: hard
-
-"normalize-url@npm:^8.0.0":
-  version: 8.0.0
-  resolution: "normalize-url@npm:8.0.0"
-  checksum: 24c20b75ebfd526d8453084692720b49d111c63c0911f1b7447427829597841eef5a8ba3f6bb93d6654007b991c1f5cd85da2c907800e439e2e2ec6c2abd0fc0
   languageName: node
   linkType: hard
 

@@ -2,16 +2,14 @@ import { PrivateKey } from '@hashgraph/sdk';
 import { divider, heading, text } from '@metamask/snaps-ui';
 import { Wallet, ethers } from 'ethers';
 import _ from 'lodash';
-import {
-  AccountBalance,
-  MirrorAccountInfo,
-  MirrorTokenInfo,
-  SimpleHederaClient,
-  Token,
-  TokenBalance,
-} from '../services/hedera';
+import { SimpleHederaClient } from '../services/hedera';
 import { HederaServiceImpl, getHederaClient } from '../services/impl/hedera';
-import { Account, ExternalAccount, NetworkParams } from '../types/account';
+import {
+  Account,
+  AccountInfo,
+  ExternalAccount,
+  NetworkParams,
+} from '../types/account';
 import { hederaNetworks } from '../types/constants';
 import { KeyStore, PulseSnapState, SnapDialogParams } from '../types/state';
 import { generateWallet } from '../utils/keyPair';
@@ -50,6 +48,7 @@ function ensure0xPrefix(address: string): string {
  * @param origin - Source.
  * @param state - PulseSnapState.
  * @param params - Parameters that were passed by the user.
+ * @param mirrorNodeUrl - Hedera mirror node URL.
  * @param isExternalAccount - Whether this is a metamask or a non-metamask account.
  * @returns MetaMask Hedera client.
  */
@@ -57,6 +56,7 @@ export async function setCurrentAccount(
   origin: string,
   state: PulseSnapState,
   params: unknown,
+  mirrorNodeUrl: string,
   isExternalAccount: boolean,
 ): Promise<void> {
   try {
@@ -109,6 +109,7 @@ export async function setCurrentAccount(
               origin,
               state,
               network,
+              mirrorNodeUrl,
               curve,
               (accountIdOrEvmAddress as string).toLowerCase(),
             );
@@ -166,6 +167,7 @@ export async function setCurrentAccount(
       origin,
       state,
       network,
+      mirrorNodeUrl,
       connectedAddress,
       keyStore,
     );
@@ -256,6 +258,7 @@ async function connectEVMAccount(
  * @param origin - Source.
  * @param state - Pulse state.
  * @param network - Hedera network.
+ * @param mirrorNodeUrl - Hedera mirror node URL.
  * @param curve - Public Key curve('ECDSA_SECP256K1' | 'ED25519').
  * @param accountId - Hedera Account id.
  */
@@ -263,6 +266,7 @@ async function connectHederaAccount(
   origin: string,
   state: PulseSnapState,
   network: string,
+  mirrorNodeUrl: string,
   curve: 'ECDSA_SECP256K1' | 'ED25519',
   accountId: string,
 ): Promise<any> {
@@ -293,9 +297,10 @@ async function connectHederaAccount(
     const privateKey = (await snapDialog(dialogParamsForPrivateKey)) as string;
 
     try {
-      const hederaService = new HederaServiceImpl(network);
-      const accountInfo: MirrorAccountInfo =
-        await hederaService.getMirrorAccountInfo(accountId);
+      const hederaService = new HederaServiceImpl(network, mirrorNodeUrl);
+      const accountInfo: AccountInfo = await hederaService.getMirrorAccountInfo(
+        accountId,
+      );
       const publicKey =
         PrivateKey.fromString(privateKey).publicKey.toStringRaw();
       if (_.isEmpty(accountInfo)) {
@@ -321,12 +326,16 @@ async function connectHederaAccount(
         );
       }
 
-      if (accountInfo.key._type !== curve) {
+      if (accountInfo.key.type !== curve) {
         console.error(
-          `You passed '${curve}' as the digital signature algorithm to use but the account '${accountId}' was derived using '${accountInfo.key._type}' on '${network}'. Please make sure to pass in the correct value for "curve".`,
+          `You passed '${curve}' as the digital signature algorithm to use but the account '${accountId}' was derived using '${
+            accountInfo.key.type ?? ''
+          }' on '${network}'. Please make sure to pass in the correct value for "curve".`,
         );
         throw new Error(
-          `You passed '${curve}' as the digital signature algorithm to use but the account '${accountId}' was derived using '${accountInfo.key._type}' on '${network}'. Please make sure to pass in the correct value for "curve".`,
+          `You passed '${curve}' as the digital signature algorithm to use but the account '${accountId}' was derived using '${
+            accountInfo.key.type ?? ''
+          }' on '${network}'. Please make sure to pass in the correct value for "curve".`,
         );
       }
 
@@ -343,8 +352,8 @@ async function connectHederaAccount(
         result.curve = curve;
         result.publicKey = hederaClient.getPublicKey().toStringRaw();
         result.hederaAccountId = accountId;
-        result.address = ensure0xPrefix(accountInfo.evm_address);
-        connectedAddress = ensure0xPrefix(accountInfo.evm_address);
+        result.address = ensure0xPrefix(accountInfo.evmAddress);
+        connectedAddress = ensure0xPrefix(accountInfo.evmAddress);
       } else {
         const dialogParamsForHederaAccountId: SnapDialogParams = {
           type: 'alert',
@@ -386,6 +395,7 @@ async function connectHederaAccount(
  * @param origin - Source.
  * @param state - IdentitySnapState.
  * @param network - Hedera network.
+ * @param mirrorNode - Hedera mirror node URL.
  * @param connectedAddress - Currently connected EVm address.
  * @param keyStore - Keystore for private, public keys and EVM address.
  */
@@ -393,6 +403,7 @@ export async function importMetaMaskAccount(
   origin: string,
   state: PulseSnapState,
   network: string,
+  mirrorNode: string,
   connectedAddress: string,
   keyStore: KeyStore,
 ): Promise<void> {
@@ -407,73 +418,38 @@ export async function importMetaMaskAccount(
   }
 
   let { balance } = state.accountState[connectedAddress][network].accountInfo;
+  let { mirrorNodeUrl } = state.accountState[connectedAddress][network];
+  if (!_.isEmpty(mirrorNode)) {
+    mirrorNodeUrl = mirrorNode;
+  }
+
   if (
     _.isEmpty(hederaAccountId) ||
     _.isEmpty(state.accountState[connectedAddress][network].accountInfo)
   ) {
     console.log('Retrieving account info from Hedera Mirror node');
-    const hederaService = new HederaServiceImpl(network);
-    const accountInfo: MirrorAccountInfo =
-      await hederaService.getMirrorAccountInfo(idOrAliasOrEvmAddress);
+    const hederaService = new HederaServiceImpl(network, mirrorNodeUrl);
+    mirrorNodeUrl = hederaService.mirrorNodeUrl;
+    const accountInfo: AccountInfo = await hederaService.getMirrorAccountInfo(
+      idOrAliasOrEvmAddress,
+    );
     if (!_.isEmpty(accountInfo)) {
-      hederaAccountId = accountInfo.account;
+      hederaAccountId = accountInfo.accountId;
 
       // Make sure that the EVM address of this accountId matches the one on Hedera
-      if (accountInfo.evm_address !== address) {
+      if (accountInfo.evmAddress !== address) {
         console.error(
-          `The Hedera account '${hederaAccountId}' is associated with the EVM address '${accountInfo.evm_address}' but you tried to associate it with the address '${address}.`,
+          `The Hedera account '${hederaAccountId}' is associated with the EVM address '${accountInfo.evmAddress}' but you tried to associate it with the address '${address}.`,
         );
         throw new Error(
-          `The Hedera account '${hederaAccountId}' is associated with the EVM address '${accountInfo.evm_address}' but you tried to associate it with the address '${address}.`,
+          `The Hedera account '${hederaAccountId}' is associated with the EVM address '${accountInfo.evmAddress}' but you tried to associate it with the address '${address}.`,
         );
       }
 
-      const accountBalance = accountInfo.balance;
-      const hbars = accountBalance.balance / 1e8;
-      const tokens: Record<string, TokenBalance> = {};
-
-      // Use map to create an array of promises
-      const tokenPromises = accountBalance.tokens.map(async (token: Token) => {
-        const tokenId = token.token_id;
-        const tokenInfo: MirrorTokenInfo = await hederaService.getTokenById(
-          tokenId,
-        );
-        tokens[tokenId] = {
-          balance: token.balance / Math.pow(10, Number(tokenInfo.decimals)),
-          decimals: Number(tokenInfo.decimals),
-          tokenId,
-          name: tokenInfo.name,
-          symbol: tokenInfo.symbol,
-          tokenType: tokenInfo.type,
-          supplyType: tokenInfo.supply_type,
-          totalSupply: tokenInfo.total_supply,
-          maxSupply: tokenInfo.max_supply,
-        } as TokenBalance;
-      });
-
-      // Wait for all promises to resolve
-      await Promise.all(tokenPromises);
-
-      balance = {
-        hbars,
-        timestamp: new Date(
-          parseFloat(accountBalance.timestamp) * 1000,
-        ).toISOString(),
-        tokens,
-      } as AccountBalance;
+      balance = accountInfo.balance;
 
       // eslint-disable-next-line require-atomic-updates
-      state.accountState[connectedAddress][network].accountInfo = {
-        alias: accountInfo.alias,
-        createdTime: new Date(
-          parseFloat(accountInfo.created_timestamp) * 1000,
-        ).toISOString(),
-        memo: accountInfo.memo,
-        balance,
-        // TODO: Run a cronjob occasionally that runs getAccountInfo and getBalance
-        // balance: via cronjob
-        // extradata: via cronjob
-      };
+      state.accountState[connectedAddress][network].accountInfo = accountInfo;
     }
 
     if (_.isEmpty(hederaAccountId)) {
@@ -518,6 +494,9 @@ export async function importMetaMaskAccount(
     address,
     hederaAccountId,
   };
+
+  // eslint-disable-next-line require-atomic-updates
+  state.accountState[connectedAddress][network].mirrorNodeUrl = mirrorNodeUrl;
 
   await updateSnapState(state);
 }

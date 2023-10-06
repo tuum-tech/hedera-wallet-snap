@@ -1,6 +1,7 @@
 import { Hbar, TransferTransaction, type Client } from '@hashgraph/sdk';
 
 import { ethers } from 'ethers';
+import { TransferCryptoRequestParams } from '../../../../../../site/src/types/snap';
 import {
   AccountBalance,
   SimpleTransfer,
@@ -25,11 +26,13 @@ export async function transferCrypto(
     currentBalance: AccountBalance;
     transfers: SimpleTransfer[];
     memo: string | null;
-    maxFee: number | null; // tinybars
+    maxFee: number | null; // hbar
     onBeforeConfirm?: () => void;
   },
 ): Promise<TxReceipt> {
-  const maxFee = options.maxFee ? new Hbar(options.maxFee) : new Hbar(1);
+  const maxFee = options.maxFee
+    ? new Hbar(options.maxFee.toFixed(8))
+    : new Hbar(1);
 
   const transaction = new TransferTransaction()
     .setTransactionMemo(options.memo ?? '')

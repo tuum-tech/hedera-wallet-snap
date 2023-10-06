@@ -70,7 +70,8 @@ export async function createAccount(
     } else {
       const multiplier = Math.pow(
         10,
-        options.currentBalance.tokens[transfer.asset].decimals,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        options.currentBalance.tokens![transfer.asset].decimals,
       );
       const amount = transfer.amount * multiplier;
 

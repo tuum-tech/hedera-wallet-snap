@@ -1,4 +1,4 @@
-import { AccountInfoJson } from '@hashgraph/sdk/lib/account/AccountInfo';
+import { StakingInfoJson } from '@hashgraph/sdk/lib/account/AccountInfo';
 import { AccountBalance } from '../services/hedera';
 
 export type ExternalAccount = {
@@ -16,11 +16,21 @@ export type Account = {
 };
 
 export type AccountInfo = {
-  alias?: string;
-  createdTime?: string;
-  memo?: string;
-  balance?: AccountBalance;
-  extraData?: AccountInfoJson;
+  accountId: string;
+  alias: string;
+  createdTime: string;
+  expirationTime: string;
+  memo: string;
+  evmAddress: string;
+  key: {
+    type: string;
+    key: string;
+  };
+  balance: AccountBalance;
+  autoRenewPeriod: string;
+  ethereumNonce: string;
+  isDeleted: boolean;
+  stakingInfo: StakingInfoJson;
 };
 
 export type NetworkParams = {

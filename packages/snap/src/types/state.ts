@@ -40,12 +40,14 @@ export type KeyStore = {
  */
 export type PulseAccountState = {
   keyStore: KeyStore;
+  mirrorNodeUrl: string;
   accountInfo: AccountInfo;
 };
 
 export type PulseSnapParams = {
   origin: string;
   state: PulseSnapState;
+  mirrorNodeUrl: string;
 };
 
 export type SnapDialogParams = {

@@ -10,6 +10,7 @@ import { getSnapStateUnchecked } from './snap/state';
 import { PulseSnapParams } from './types/state';
 import { init } from './utils/init';
 import {
+  getMirrorNodeFlagIfExists,
   isExternalAccountFlagSet,
   isValidGetAccountInfoRequest,
   isValidTransferCryptoParams,
@@ -55,7 +56,15 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
     isExternalAccount = true;
   }
 
-  await setCurrentAccount(origin, state, request.params, isExternalAccount);
+  const mirrorNodeUrl = getMirrorNodeFlagIfExists(request.params);
+
+  await setCurrentAccount(
+    origin,
+    state,
+    request.params,
+    mirrorNodeUrl,
+    isExternalAccount,
+  );
   console.log(
     `Current account: ${JSON.stringify(state.currentAccount, null, 4)}`,
   );
@@ -63,6 +72,7 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
   const pulseSnapParams: PulseSnapParams = {
     origin,
     state,
+    mirrorNodeUrl,
   };
 
   switch (request.method) {

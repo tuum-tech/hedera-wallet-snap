@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { Col, Container, Row } from 'react-bootstrap';
+import { Col, Container, Form, Row } from 'react-bootstrap';
 import Select from 'react-select';
 import { Card, InstallFlaskButton } from '../components/base';
 import { ConnectPulseSnap } from '../components/cards/ConnectPulseSnap';
@@ -26,6 +26,7 @@ import { connectSnap, getSnap } from '../utils';
 const Index = () => {
   const [state, dispatch] = useContext(MetaMaskContext);
   const [currentNetwork, setCurrentNetwork] = useState(networkOptions[0]);
+  const [mirrorNodeUrl, setMirrorNodeUrl] = useState('');
   const [accountInfo, setAccountInfo] = useState<Account>({} as Account);
 
   const handleNetworkChange = (network: any) => {
@@ -70,6 +71,14 @@ const Index = () => {
               marginBottom: 8,
             }),
           }}
+        />
+        <Form.Label>Enter your own Mirror Node URL to use(Optional)</Form.Label>
+        <Form.Control
+          size="lg"
+          type="text"
+          placeholder="eg. https://testnet.mirrornode.hedera.com"
+          style={{ marginBottom: 8 }}
+          onChange={(e) => setMirrorNodeUrl(e.target.value)}
         />
       </Subtitle>
       <Container>
@@ -116,16 +125,19 @@ const Index = () => {
 
         <SendHelloHessage
           network={currentNetwork.value}
+          mirrorNodeUrl={mirrorNodeUrl}
           setAccountInfo={setAccountInfo}
         />
 
         <GetAccountInfo
           network={currentNetwork.value}
+          mirrorNodeUrl={mirrorNodeUrl}
           setAccountInfo={setAccountInfo}
         />
 
         <TransferCrypto
           network={currentNetwork.value}
+          mirrorNodeUrl={mirrorNodeUrl}
           setAccountInfo={setAccountInfo}
         />
 

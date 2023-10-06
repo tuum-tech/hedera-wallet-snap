@@ -13,10 +13,15 @@ import ExternalAccount, {
 
 type Props = {
   network: string;
+  mirrorNodeUrl: string;
   setAccountInfo: React.Dispatch<React.SetStateAction<Account>>;
 };
 
-const GetAccountInfo: FC<Props> = ({ network, setAccountInfo }) => {
+const GetAccountInfo: FC<Props> = ({
+  network,
+  mirrorNodeUrl,
+  setAccountInfo,
+}) => {
   const [state, dispatch] = useContext(MetaMaskContext);
   const [loading, setLoading] = useState(false);
   const { showModal } = useModal();
@@ -32,6 +37,7 @@ const GetAccountInfo: FC<Props> = ({ network, setAccountInfo }) => {
 
       const response: any = await getAccountInfo(
         network,
+        mirrorNodeUrl,
         accountId,
         externalAccountParams,
       );

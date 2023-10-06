@@ -9,15 +9,20 @@ import { Card, SendHelloButton } from '../base';
 
 type Props = {
   network: string;
+  mirrorNodeUrl: string;
   setAccountInfo: React.Dispatch<React.SetStateAction<Account>>;
 };
 
-const SendHelloHessage: FC<Props> = ({ network, setAccountInfo }) => {
+const SendHelloHessage: FC<Props> = ({
+  network,
+  mirrorNodeUrl,
+  setAccountInfo,
+}) => {
   const [state, dispatch] = useContext(MetaMaskContext);
 
   const handleSendHelloClick = async () => {
     try {
-      const response: any = await sendHello(network);
+      const response: any = await sendHello(network, mirrorNodeUrl);
       setAccountInfo(response.currentAccount);
     } catch (e) {
       console.error(e);

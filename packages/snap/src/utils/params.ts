@@ -1,9 +1,46 @@
 import _ from 'lodash';
+import normalizeUrl from 'normalize-url';
 import { ExternalAccount } from '../types/account';
 import {
   GetAccountInfoRequestParams,
+  MirrorNodeParams,
   TransferCryptoRequestParams,
 } from '../types/params';
+
+/**
+ * Check Validation of MirrorNode flag.
+ *
+ * @param params - Request params.
+ * @returns MirrornodeUrl.
+ */
+export function getMirrorNodeFlagIfExists(params: unknown): string {
+  let mirrorNodeUrl = '';
+  if (
+    params !== null &&
+    typeof params === 'object' &&
+    'mirrorNodeUrl' in params
+  ) {
+    const parameter = params as MirrorNodeParams;
+
+    if (
+      parameter.mirrorNodeUrl === null ||
+      typeof parameter.mirrorNodeUrl !== 'string'
+    ) {
+      console.error(
+        'Invalid MirrorNode Params passed. "mirrorNodeUrl" must be a string',
+      );
+      throw new Error(
+        'Invalid MirrorNode Params passed. "mirrorNodeUrl" must be a string',
+      );
+    }
+
+    if (!_.isEmpty(parameter.mirrorNodeUrl)) {
+      mirrorNodeUrl = normalizeUrl(parameter.mirrorNodeUrl);
+    }
+  }
+
+  return mirrorNodeUrl;
+}
 
 /**
  * Check whether the the account was imported using private key(external account).
