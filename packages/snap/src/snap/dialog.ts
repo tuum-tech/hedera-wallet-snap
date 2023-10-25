@@ -1,14 +1,14 @@
 import { divider, heading, panel, Panel, text } from '@metamask/snaps-ui';
 
-import { PulseSnapState, SnapDialogParams } from '../types/state';
+import { SnapDialogParams, WalletSnapState } from '../types/state';
 import { updateSnapState } from './state';
 
 /**
  * Function that toggles the disablePopups flag in the config.
  *
- * @param state - PulseSnapState.
+ * @param state - WalletSnapState.
  */
-export async function updatePopups(state: PulseSnapState) {
+export async function updatePopups(state: WalletSnapState) {
   state.snapConfig.dApp.disablePopups = !state.snapConfig.dApp.disablePopups;
   await updateSnapState(state);
 }

@@ -1,13 +1,13 @@
-import { PulseSnapState } from '../types/state';
+import { WalletSnapState } from '../types/state';
 import { updateSnapState } from './state';
 
 /**
  * Function that lets you add a friendly dApp.
  *
- * @param state - PulseSnapState.
+ * @param state - WalletSnapState.
  * @param dapp - Dapp.
  */
-export async function addFriendlyDapp(state: PulseSnapState, dapp: string) {
+export async function addFriendlyDapp(state: WalletSnapState, dapp: string) {
   state.snapConfig.dApp.friendlyDapps.push(dapp);
   await updateSnapState(state);
 }
@@ -15,10 +15,10 @@ export async function addFriendlyDapp(state: PulseSnapState, dapp: string) {
 /**
  * Function that removes a friendly dApp.
  *
- * @param state - PulseSnapState.
+ * @param state - WalletSnapState.
  * @param dapp - Dapp.
  */
-export async function removeFriendlyDapp(state: PulseSnapState, dapp: string) {
+export async function removeFriendlyDapp(state: WalletSnapState, dapp: string) {
   // FIXME: TEST IF YOU CAN REFERENCE FRIENDLY DAPS
   // let friendlyDapps = state.snapConfig.dApp.friendlyDapps;
   // friendlyDapps = friendlyDapps.filter((app) => app !== dapp);

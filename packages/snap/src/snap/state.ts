@@ -1,15 +1,15 @@
 import _ from 'lodash';
 import { Account } from '../types/account';
-import { PulseSnapState } from '../types/state';
+import { WalletSnapState } from '../types/state';
 import { getEmptyAccountState, getInitialSnapState } from '../utils/config';
 
 /**
- * Function for updating PulseSnapState object in the MetaMask state.
+ * Function for updating WalletSnapState object in the MetaMask state.
  *
  * @public
  * @param snapState - Object to replace the current object in the MetaMask state.
  */
-export async function updateSnapState(snapState: PulseSnapState) {
+export async function updateSnapState(snapState: WalletSnapState) {
   await snap.request({
     method: 'snap_manageState',
     params: {
@@ -20,46 +20,46 @@ export async function updateSnapState(snapState: PulseSnapState) {
 }
 
 /**
- * Function to retrieve PulseSnapState object from the MetaMask state.
+ * Function to retrieve WalletSnapState object from the MetaMask state.
  *
  * @public
  * @returns Object from the state.
  */
-export async function getSnapState(): Promise<PulseSnapState> {
+export async function getSnapState(): Promise<WalletSnapState> {
   const state = (await snap.request({
     method: 'snap_manageState',
     params: { operation: 'get' },
-  })) as PulseSnapState | null;
+  })) as WalletSnapState | null;
 
   if (state === null || _.isEmpty(state)) {
-    throw Error('PulseSnapState is not initialized!');
+    throw Error('WalletSnapState is not initialized!');
   }
 
   return state;
 }
 
 /**
- * Function to retrieve PulseSnapState object from the MetaMask state.
+ * Function to retrieve WalletSnapState object from the MetaMask state.
  *
  * @public
  * @returns Object from the state.
  */
-export async function getSnapStateUnchecked(): Promise<PulseSnapState | null> {
+export async function getSnapStateUnchecked(): Promise<WalletSnapState | null> {
   const state = (await snap.request({
     method: 'snap_manageState',
     params: { operation: 'get' },
-  })) as PulseSnapState | null;
+  })) as WalletSnapState | null;
 
   return state;
 }
 
 /**
- * Function to initialize PulseSnapState object.
+ * Function to initialize WalletSnapState object.
  *
  * @public
  * @returns Object.
  */
-export async function initSnapState(): Promise<PulseSnapState> {
+export async function initSnapState(): Promise<WalletSnapState> {
   const state = getInitialSnapState();
   await updateSnapState(state);
   return state;
@@ -68,12 +68,12 @@ export async function initSnapState(): Promise<PulseSnapState> {
 /**
  * Function that creates an empty IdentitySnapState object in the Identity Snap state for the provided address.
  *
- * @param state - PulseSnapState.
+ * @param state - WalletSnapState.
  * @param network - Hedera network.
  * @param evmAddress - The account address.
  */
 export async function initAccountState(
-  state: PulseSnapState,
+  state: WalletSnapState,
   network: string,
   evmAddress: string,
 ): Promise<void> {
@@ -89,13 +89,13 @@ export async function initAccountState(
 /**
  * Check if Hedera account was imported.
  *
- * @param state - PulseSnapState.
+ * @param state - WalletSnapState.
  * @param network - Hedera network.
  * @param evmAddress - Ethereum address.
  * @returns Result.
  */
 export async function getHederaAccountIdIfExists(
-  state: PulseSnapState,
+  state: WalletSnapState,
   network: string,
   evmAddress: string,
 ): Promise<string> {

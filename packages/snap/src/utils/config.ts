@@ -1,7 +1,7 @@
 import cloneDeep from 'lodash.clonedeep';
 
 import { Account, AccountInfo } from '../types/account';
-import { KeyStore, PulseAccountState, PulseSnapState } from '../types/state';
+import { KeyStore, WalletAccountState, WalletSnapState } from '../types/state';
 
 const emptyAccountState = {
   keyStore: {
@@ -12,13 +12,13 @@ const emptyAccountState = {
     hederaAccountId: '',
   } as KeyStore,
   accountInfo: {} as AccountInfo,
-} as PulseAccountState;
+} as WalletAccountState;
 
 export const getEmptyAccountState = () => {
   return cloneDeep(emptyAccountState);
 };
 
-const initialSnapState: PulseSnapState = {
+const initialSnapState: WalletSnapState = {
   currentAccount: {} as Account,
   accountState: {},
   snapConfig: {

@@ -8,20 +8,20 @@ import {
 import { createHederaClient } from '../../snap/account';
 import { snapDialog } from '../../snap/dialog';
 import { TransferCryptoRequestParams } from '../../types/params';
-import { PulseSnapParams, SnapDialogParams } from '../../types/state';
+import { WalletSnapParams, SnapDialogParams } from '../../types/state';
 
 /**
  * Transfer crypto(hbar or other tokens).
  *
- * @param pulseSnapParams - Pulse snap params.
+ * @param walletSnapParams - Wallet snap params.
  * @param transferCryptoParams - Parameters for transferring crypto.
  * @returns Account Info.
  */
 export async function transferCrypto(
-  pulseSnapParams: PulseSnapParams,
+  walletSnapParams: WalletSnapParams,
   transferCryptoParams: TransferCryptoRequestParams,
 ): Promise<TxReceipt> {
-  const { origin, state } = pulseSnapParams;
+  const { origin, state } = walletSnapParams;
 
   const {
     transfers = [] as SimpleTransfer[],
@@ -37,7 +37,7 @@ export async function transferCrypto(
     if (!acc[transfer.asset]) {
       acc[transfer.asset] = 0;
     }
-    acc[transfer.asset] += transfer.amount * 0.001; // Add 0.1% of the amount
+    acc[transfer.asset] += transfer.amount * 0.0001; // Add 0.01% of the amount; This can be changed in the future
     return acc;
   }, {});
 

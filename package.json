@@ -1,15 +1,15 @@
 {
-  "name": "@tuum-tech/hedera-pulse-monorepo",
+  "name": "@tuum-tech/hedera-wallet-snap-monorepo",
   "version": "0.1.0",
   "private": true,
   "description": "",
-  "homepage": "https://github.com/tuum-tech/hedera-pulse#readme",
+  "homepage": "https://github.com/tuum-tech/hedera-wallet-snap#readme",
   "bugs": {
-    "url": "https://github.com/tuum-tech/hedera-pulse/issues"
+    "url": "https://github.com/tuum-tech/hedera-wallet-snap/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tuum-tech/hedera-pulse.git"
+    "url": "git+https://github.com/tuum-tech/hedera-wallet-snap.git"
   },
   "license": "(MIT-0 OR Apache-2.0)",
   "author": "",

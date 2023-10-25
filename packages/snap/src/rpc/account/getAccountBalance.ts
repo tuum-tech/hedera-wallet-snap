@@ -1,6 +1,6 @@
 import { createHederaClient } from '../../snap/account';
 import { updateSnapState } from '../../snap/state';
-import { PulseSnapParams } from '../../types/state';
+import { WalletSnapParams } from '../../types/state';
 
 /**
  * A query that returns the account balance for the specified account.
@@ -8,13 +8,13 @@ import { PulseSnapParams } from '../../types/state';
  * not change the state of the account or require network consensus. The
  * information is returned from a single node processing the query.
  *
- * @param pulseSnapParams - Pulse snap params.
+ * @param walletSnapParams - Wallet snap params.
  * @returns Account Balance.
  */
 export async function getAccountBalance(
-  pulseSnapParams: PulseSnapParams,
+  walletSnapParams: WalletSnapParams,
 ): Promise<number> {
-  const { state } = pulseSnapParams;
+  const { state } = walletSnapParams;
 
   const { hederaAccountId, hederaEvmAddress, network } = state.currentAccount;
 

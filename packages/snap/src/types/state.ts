@@ -2,22 +2,22 @@ import { Panel } from '@metamask/snaps-ui';
 
 import { Account, AccountInfo } from './account';
 
-export type PulseSnapState = {
+export type WalletSnapState = {
   currentAccount: Account;
 
   /**
    * Account specific storage
    * mapping(evm address -> mapping(network -> state))
    */
-  accountState: Record<string, Record<string, PulseAccountState>>;
+  accountState: Record<string, Record<string, WalletAccountState>>;
 
   /**
-   * Configuration for PulseSnap
+   * Configuration for WalletSnap
    */
-  snapConfig: PulseSnapConfig;
+  snapConfig: WalletSnapConfig;
 };
 
-export type PulseSnapConfig = {
+export type WalletSnapConfig = {
   snap: {
     acceptedTerms: boolean;
   };
@@ -36,17 +36,17 @@ export type KeyStore = {
 };
 
 /**
- * Pulse Snap State for a MetaMask address
+ * Wallet Snap State for a MetaMask address
  */
-export type PulseAccountState = {
+export type WalletAccountState = {
   keyStore: KeyStore;
   mirrorNodeUrl: string;
   accountInfo: AccountInfo;
 };
 
-export type PulseSnapParams = {
+export type WalletSnapParams = {
   origin: string;
-  state: PulseSnapState;
+  state: WalletSnapState;
   mirrorNodeUrl: string;
 };
 

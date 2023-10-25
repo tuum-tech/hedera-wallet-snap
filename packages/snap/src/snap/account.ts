@@ -11,7 +11,7 @@ import {
   NetworkParams,
 } from '../types/account';
 import { hederaNetworks } from '../types/constants';
-import { KeyStore, PulseSnapState, SnapDialogParams } from '../types/state';
+import { KeyStore, SnapDialogParams, WalletSnapState } from '../types/state';
 import { generateWallet } from '../utils/keyPair';
 import { generateCommonPanel, snapDialog } from './dialog';
 import { validHederaNetwork } from './network';
@@ -46,7 +46,7 @@ function ensure0xPrefix(address: string): string {
  * Function that returns account info of the currently selected MetaMask account.
  *
  * @param origin - Source.
- * @param state - PulseSnapState.
+ * @param state - WalletSnapState.
  * @param params - Parameters that were passed by the user.
  * @param mirrorNodeUrl - Hedera mirror node URL.
  * @param isExternalAccount - Whether this is a metamask or a non-metamask account.
@@ -54,7 +54,7 @@ function ensure0xPrefix(address: string): string {
  */
 export async function setCurrentAccount(
   origin: string,
-  state: PulseSnapState,
+  state: WalletSnapState,
   params: unknown,
   mirrorNodeUrl: string,
   isExternalAccount: boolean,
@@ -131,7 +131,7 @@ export async function setCurrentAccount(
     } else {
       // Handle metamask connected account
       connectedAddress = await getCurrentMetamaskAccount();
-      // Generate a new wallet according to the Hedera Pulse's entrophy combined with the currently connected EVM address
+      // Generate a new wallet according to the Hedera Wallet's entrophy combined with the currently connected EVM address
       const res = await generateWallet(connectedAddress);
       if (!res) {
         console.log('Failed to generate snap wallet for DID operations');
@@ -158,7 +158,7 @@ export async function setCurrentAccount(
         !Object.keys(state.accountState[connectedAddress]).includes(network))
     ) {
       console.log(
-        `The address ${connectedAddress} has NOT yet been configured for the '${network}' network in the Hedera Pulse Snap. Configuring now...`,
+        `The address ${connectedAddress} has NOT yet been configured for the '${network}' network in the Hedera Wallet. Configuring now...`,
       );
       await initAccountState(state, network, connectedAddress);
     }
@@ -181,14 +181,14 @@ export async function setCurrentAccount(
  * Connect EVM Account.
  *
  * @param origin - Source.
- * @param state - Pulse state.
+ * @param state - Wallet state.
  * @param network - Hedera network.
  * @param curve - Public Key curve('ECDSA_SECP256K1' | 'ED25519').
  * @param evmAddress - EVM Account address.
  */
 async function connectEVMAccount(
   origin: string,
-  state: PulseSnapState,
+  state: WalletSnapState,
   network: string,
   curve: 'ECDSA_SECP256K1' | 'ED25519',
   evmAddress: string,
@@ -256,7 +256,7 @@ async function connectEVMAccount(
  * Connect Hedera Account.
  *
  * @param origin - Source.
- * @param state - Pulse state.
+ * @param state - Wallet state.
  * @param network - Hedera network.
  * @param mirrorNodeUrl - Hedera mirror node URL.
  * @param curve - Public Key curve('ECDSA_SECP256K1' | 'ED25519').
@@ -264,7 +264,7 @@ async function connectEVMAccount(
  */
 async function connectHederaAccount(
   origin: string,
-  state: PulseSnapState,
+  state: WalletSnapState,
   network: string,
   mirrorNodeUrl: string,
   curve: 'ECDSA_SECP256K1' | 'ED25519',
@@ -401,7 +401,7 @@ async function connectHederaAccount(
  */
 export async function importMetaMaskAccount(
   origin: string,
-  state: PulseSnapState,
+  state: WalletSnapState,
   network: string,
   mirrorNode: string,
   connectedAddress: string,

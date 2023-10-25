@@ -6826,9 +6826,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tuum-tech/hedera-pulse-monorepo@workspace:.":
+"@tuum-tech/hedera-wallet-snap-monorepo@workspace:.":
   version: 0.0.0-use.local
-  resolution: "@tuum-tech/hedera-pulse-monorepo@workspace:."
+  resolution: "@tuum-tech/hedera-wallet-snap-monorepo@workspace:."
   dependencies:
     "@metamask/eslint-config": ^11.1.0
     "@metamask/eslint-config-jest": ^11.1.0
@@ -6849,9 +6849,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@tuum-tech/hedera-pulse-site@workspace:packages/site":
+"@tuum-tech/hedera-wallet-snap-site@workspace:packages/site":
   version: 0.0.0-use.local
-  resolution: "@tuum-tech/hedera-pulse-site@workspace:packages/site"
+  resolution: "@tuum-tech/hedera-wallet-snap-site@workspace:packages/site"
   dependencies:
     "@hashgraph/sdk": ^2.34.1
     "@metamask/eslint-config": ^11.1.0
@@ -6902,9 +6902,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@tuum-tech/hedera-pulse@workspace:packages/snap":
+"@tuum-tech/hedera-wallet-snap@workspace:packages/snap":
   version: 0.0.0-use.local
-  resolution: "@tuum-tech/hedera-pulse@workspace:packages/snap"
+  resolution: "@tuum-tech/hedera-wallet-snap@workspace:packages/snap"
   dependencies:
     "@babel/core": ^7.21.0
     "@babel/plugin-proposal-decorators": ^7.21.0

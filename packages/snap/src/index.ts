@@ -7,7 +7,7 @@ import { getAccountInfo } from './rpc/account/getAccountInfo';
 import { transferCrypto } from './rpc/account/transferCrypto';
 import { setCurrentAccount } from './snap/account';
 import { getSnapStateUnchecked } from './snap/state';
-import { PulseSnapParams } from './types/state';
+import { WalletSnapParams } from './types/state';
 import { init } from './utils/init';
 import {
   getMirrorNodeFlagIfExists,
@@ -69,7 +69,7 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
     `Current account: ${JSON.stringify(state.currentAccount, null, 4)}`,
   );
 
-  const pulseSnapParams: PulseSnapParams = {
+  const walletSnapParams: WalletSnapParams = {
     origin,
     state,
     mirrorNodeUrl,
@@ -98,7 +98,7 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
       return {
         currentAccount: state.currentAccount,
         accountInfo: await getAccountInfo(
-          pulseSnapParams,
+          walletSnapParams,
           request.params.accountId,
         ),
       };
@@ -106,14 +106,14 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
     case 'getAccountBalance': {
       return {
         currentAccount: state.currentAccount,
-        accountBalance: await getAccountBalance(pulseSnapParams),
+        accountBalance: await getAccountBalance(walletSnapParams),
       };
     }
     case 'transferCrypto': {
       isValidTransferCryptoParams(request.params);
       return {
         currentAccount: state.currentAccount,
-        receipt: await transferCrypto(pulseSnapParams, request.params),
+        receipt: await transferCrypto(walletSnapParams, request.params),
       };
     }
     default:

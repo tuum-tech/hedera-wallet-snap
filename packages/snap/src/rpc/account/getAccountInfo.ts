@@ -6,7 +6,7 @@ import { createHederaClient } from '../../snap/account';
 import { generateCommonPanel, snapDialog } from '../../snap/dialog';
 import { updateSnapState } from '../../snap/state';
 import { AccountInfo } from '../../types/account';
-import { PulseSnapParams, SnapDialogParams } from '../../types/state';
+import { WalletSnapParams, SnapDialogParams } from '../../types/state';
 import {
   calculateHederaQueryFees,
   deductServiceFee,
@@ -27,15 +27,15 @@ import {
  * available so these fields contain current data. Historical ethereum nonce information is also
  * currently not available and may not be the exact value at a provided timestamp.
  *
- * @param pulseSnapParams - Pulse snap params.
+ * @param walletSnapParams - Wallet snap params.
  * @param accountId - Hedera Account Id.
  * @returns Account Info.
  */
 export async function getAccountInfo(
-  pulseSnapParams: PulseSnapParams,
+  walletSnapParams: WalletSnapParams,
   accountId?: string,
 ): Promise<AccountInfo> {
-  const { origin, state, mirrorNodeUrl } = pulseSnapParams;
+  const { origin, state, mirrorNodeUrl } = walletSnapParams;
 
   const { hederaAccountId, hederaEvmAddress, network } = state.currentAccount;
 
