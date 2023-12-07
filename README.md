@@ -1,4 +1,6 @@
-# @tuum-tech/hedera-wallet-snap-monorepo
+# :no_entry: [DEPRECATED] Active at [Hedera Hashgraph Snap Repo](https://github.com/hashgraph/hedera-metamask-snaps)
+
+Hedera Wallet Snap has moved. You can find the latest version of the source code [inside the Hashgraph repository](https://github.com/hashgraph/hedera-metamask-snaps/tree/main/packages/hedera-wallet-snap), where it will continue to be developed.
 
 ## Getting Started
 
